@@ -3,7 +3,7 @@
 
 ![ci](https://github.com/NCodeGroup/PasswordGenerator/actions/workflows/main.yml/badge.svg)
 
-# PasswordGenerator
+# Overview
 This [DI] friendly library provides the ability to generate strong cryptographically random passwords that meet the OWASP requirements (length, lower case, upper case, numeric, and special characters).
 
 # Requirements

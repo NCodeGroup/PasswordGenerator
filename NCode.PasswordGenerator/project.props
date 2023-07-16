@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project>
+
+  <PropertyGroup>
+    <Description>This DI friendly library provides the ability to generate strong cryptographically random passwords that meet the OWASP requirements (length, lower case, upper case, numeric, and special characters).</Description>
+    <PackageTags>OWASP;cryptographic;password;generator;random</PackageTags>
+  </PropertyGroup>
+
+</Project>

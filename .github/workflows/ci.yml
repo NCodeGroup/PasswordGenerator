@@ -25,6 +25,10 @@ jobs:
       - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
         with:
           global-json-file: global.json
+      # The test project targets net6.0, and the runner has no .NET 6 runtime.
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          dotnet-version: 6.0.x
       - name: Build
         if: hashFiles('**/*.csproj', '**/*.sln', '**/*.slnx') != ''
         run: |

@@ -6,14 +6,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageVersion Include="coverlet.collector" Version="3.1.2" />
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="7.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Options" Version="7.0.1" />
-    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.1.0" />
-    <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="1.1.1" />
-    <PackageVersion Include="Moq" Version="4.17.2" />
-    <PackageVersion Include="xunit" Version="2.4.1" />
-    <PackageVersion Include="xunit.runner.visualstudio" Version="2.4.3" />
+    <PackageVersion Include="coverlet.collector" Version="10.1.0" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.14" />
+    <PackageVersion Include="Microsoft.Extensions.Options" Version="10.0.14" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.13.0" />
+    <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="10.0.403" />
+    <PackageVersion Include="Moq" Version="4.21.0" />
+    <PackageVersion Include="xunit" Version="2.9.3" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="3.0.2" />
   </ItemGroup>
 
 </Project>

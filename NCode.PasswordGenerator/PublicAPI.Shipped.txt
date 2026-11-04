@@ -1,0 +1,62 @@
+#nullable enable
+NCode.PasswordGenerator.IPasswordGenerator
+NCode.PasswordGenerator.IPasswordGenerator.Generate() -> string!
+NCode.PasswordGenerator.IPasswordGenerator.Generate(NCode.PasswordGenerator.PasswordGeneratorOptions! options, System.Span<char> password) -> void
+NCode.PasswordGenerator.IPasswordGenerator.Generate(NCode.PasswordGenerator.PasswordGeneratorOptions! options) -> string!
+NCode.PasswordGenerator.IPasswordGenerator.Generate(System.Action<NCode.PasswordGenerator.PasswordGeneratorOptions!>! optionsConfigurator, System.Span<char> password) -> void
+NCode.PasswordGenerator.IPasswordGenerator.Generate(System.Action<NCode.PasswordGenerator.PasswordGeneratorOptions!>! optionsConfigurator) -> string!
+NCode.PasswordGenerator.IPasswordGenerator.Generate(System.Span<char> password) -> void
+NCode.PasswordGenerator.PasswordGenerator
+NCode.PasswordGenerator.PasswordGenerator.Generate() -> string!
+NCode.PasswordGenerator.PasswordGenerator.Generate(NCode.PasswordGenerator.PasswordGeneratorOptions! options, System.Span<char> password) -> void
+NCode.PasswordGenerator.PasswordGenerator.Generate(System.Action<NCode.PasswordGenerator.PasswordGeneratorOptions!>! optionsConfigurator, System.Span<char> password) -> void
+NCode.PasswordGenerator.PasswordGenerator.Generate(System.Action<NCode.PasswordGenerator.PasswordGeneratorOptions!>! optionsConfigurator) -> string!
+NCode.PasswordGenerator.PasswordGenerator.Generate(System.Span<char> password) -> void
+NCode.PasswordGenerator.PasswordGenerator.GetEnumerator() -> System.Collections.Generic.IEnumerator<string!>!
+NCode.PasswordGenerator.PasswordGenerator.PasswordGenerator() -> void
+NCode.PasswordGenerator.PasswordGenerator.PasswordGenerator(Microsoft.Extensions.Options.IOptions<NCode.PasswordGenerator.PasswordGeneratorOptions!>! optionsAccessor) -> void
+NCode.PasswordGenerator.PasswordGenerator.PasswordGenerator(NCode.PasswordGenerator.PasswordGeneratorOptions! options) -> void
+NCode.PasswordGenerator.PasswordGeneratorOptions
+NCode.PasswordGenerator.PasswordGeneratorOptions.CharacterSet.get -> string!
+NCode.PasswordGenerator.PasswordGeneratorOptions.Clone() -> NCode.PasswordGenerator.PasswordGeneratorOptions!
+NCode.PasswordGenerator.PasswordGeneratorOptions.ExactLength.set -> void
+NCode.PasswordGenerator.PasswordGeneratorOptions.IsValid(System.ReadOnlySpan<char> password) -> bool
+NCode.PasswordGenerator.PasswordGeneratorOptions.MaxAttempts.get -> int
+NCode.PasswordGenerator.PasswordGeneratorOptions.MaxAttempts.set -> void
+NCode.PasswordGenerator.PasswordGeneratorOptions.MaxConsecutiveIdenticalCharacters.get -> int
+NCode.PasswordGenerator.PasswordGeneratorOptions.MaxConsecutiveIdenticalCharacters.set -> void
+NCode.PasswordGenerator.PasswordGeneratorOptions.MaxEnumerations.get -> int
+NCode.PasswordGenerator.PasswordGeneratorOptions.MaxEnumerations.set -> void
+NCode.PasswordGenerator.PasswordGeneratorOptions.MaxLength.get -> int
+NCode.PasswordGenerator.PasswordGeneratorOptions.MaxLength.set -> void
+NCode.PasswordGenerator.PasswordGeneratorOptions.MinLength.get -> int
+NCode.PasswordGenerator.PasswordGeneratorOptions.MinLength.set -> void
+NCode.PasswordGenerator.PasswordGeneratorOptions.MinLowercaseCharacters.get -> int
+NCode.PasswordGenerator.PasswordGeneratorOptions.MinLowercaseCharacters.set -> void
+NCode.PasswordGenerator.PasswordGeneratorOptions.MinNumericCharacters.get -> int
+NCode.PasswordGenerator.PasswordGeneratorOptions.MinNumericCharacters.set -> void
+NCode.PasswordGenerator.PasswordGeneratorOptions.MinSpecialCharacters.get -> int
+NCode.PasswordGenerator.PasswordGeneratorOptions.MinSpecialCharacters.set -> void
+NCode.PasswordGenerator.PasswordGeneratorOptions.MinUppercaseCharacters.get -> int
+NCode.PasswordGenerator.PasswordGeneratorOptions.MinUppercaseCharacters.set -> void
+NCode.PasswordGenerator.PasswordGeneratorOptions.PasswordGeneratorOptions() -> void
+NCode.PasswordGenerator.PasswordGeneratorOptions.Reset() -> NCode.PasswordGenerator.PasswordGeneratorOptions!
+NCode.PasswordGenerator.PasswordGeneratorOptions.SetExactLength(int value) -> NCode.PasswordGenerator.PasswordGeneratorOptions!
+NCode.PasswordGenerator.PasswordGeneratorOptions.SetLengthRange(int minLength, int maxLength) -> NCode.PasswordGenerator.PasswordGeneratorOptions!
+NCode.PasswordGenerator.PasswordGeneratorOptions.SetMaxAttempts(int value) -> NCode.PasswordGenerator.PasswordGeneratorOptions!
+NCode.PasswordGenerator.PasswordGeneratorOptions.SetMaxConsecutiveIdenticalCharacters(int value) -> NCode.PasswordGenerator.PasswordGeneratorOptions!
+NCode.PasswordGenerator.PasswordGeneratorOptions.SetMaxEnumerations(int value) -> NCode.PasswordGenerator.PasswordGeneratorOptions!
+NCode.PasswordGenerator.PasswordGeneratorOptions.SetMaxLength(int value) -> NCode.PasswordGenerator.PasswordGeneratorOptions!
+NCode.PasswordGenerator.PasswordGeneratorOptions.SetMinLength(int value) -> NCode.PasswordGenerator.PasswordGeneratorOptions!
+NCode.PasswordGenerator.PasswordGeneratorOptions.SetMinLowercaseCharacters(int value) -> NCode.PasswordGenerator.PasswordGeneratorOptions!
+NCode.PasswordGenerator.PasswordGeneratorOptions.SetMinNumericCharacters(int value) -> NCode.PasswordGenerator.PasswordGeneratorOptions!
+NCode.PasswordGenerator.PasswordGeneratorOptions.SetMinSpecialCharacters(int value) -> NCode.PasswordGenerator.PasswordGeneratorOptions!
+NCode.PasswordGenerator.PasswordGeneratorOptions.SetMinUppercaseCharacters(int value) -> NCode.PasswordGenerator.PasswordGeneratorOptions!
+NCode.PasswordGenerator.PasswordGeneratorOptions.SetSpecialCharacters(string! value) -> NCode.PasswordGenerator.PasswordGeneratorOptions!
+NCode.PasswordGenerator.PasswordGeneratorOptions.SpecialCharacters.get -> string!
+NCode.PasswordGenerator.PasswordGeneratorOptions.SpecialCharacters.set -> void
+NCode.PasswordGenerator.ServiceCollectionExtensions
+static NCode.PasswordGenerator.PasswordGenerator.Default.get -> NCode.PasswordGenerator.IPasswordGenerator!
+static NCode.PasswordGenerator.ServiceCollectionExtensions.AddPasswordGenerator(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<NCode.PasswordGenerator.PasswordGeneratorOptions!>! configureOptions) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static NCode.PasswordGenerator.ServiceCollectionExtensions.AddPasswordGenerator(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+virtual NCode.PasswordGenerator.PasswordGenerator.Generate(NCode.PasswordGenerator.PasswordGeneratorOptions! options) -> string!

@@ -39,4 +39,6 @@ How `/ship-plan` lands a reviewed plan. `integrate`: `pull-request` pushes the p
 
 ## Conventions
 
-- (Add the project's conventions here, and any template rule this project overrides.)
+- A change to the public API is recorded with `./build/Update-PublicApi.ps1` in the same pull request.
+- Packages are published from a GitHub release by the `publish` job of `.github/workflows/main.yml`, with a NuGet API key; the template's `publish.yml` is not used.
+- This repository accepts the template's ADR-0006 exception: `.github/workflows/code-review-auto-merge.yml` auto-merges Dependabot's NCode Review pin bumps (minor and patch only).

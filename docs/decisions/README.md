@@ -62,3 +62,5 @@ override in `AGENTS.md`.
 
 | ADR | Decision | Status |
 | --- | --- | --- |
+
+NCode.PasswordGenerator has no decision records of its own yet; its records are numbered from 1000.

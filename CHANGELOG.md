@@ -8,12 +8,11 @@ The format is based on [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.
 
 ### Added
 
-- Public API tracking with `PublicAPI.Shipped.txt` and `PublicAPI.Unshipped.txt`; the public surface of v1.0.1 is recorded as shipped.
-- `CONTRIBUTING.md`, `SECURITY.md`, decision records in `docs/decisions/`, and a Definition of Done script, `build/dod.ps1`.
-- A publish workflow for NuGet trusted publishing and a weekly template-update workflow.
+- Public API tracking with `PublicAPI.Shipped.txt` and `PublicAPI.Unshipped.txt`; the public API of v1.0.1 is recorded as shipped and is unchanged.
 
 ### Changed
 
-- Updated the project from project-template v0.41.1 to v0.61.2: shared build settings and analyzers, CI running the Definition of Done, Dependabot cooldown and security groups, and the NCode Review workflow.
+- `AssemblyVersion` now moves only with the major version (`1.0.0.0` for every 1.x release), so a minor or patch upgrade is a drop-in replacement; `FileVersion` and `InformationalVersion` keep the exact version. Releases up to 1.0.1 had an `AssemblyVersion` equal to the package version.
+- Updated the project to project-template v0.61.2: stricter analyzers and banned APIs, a Definition of Done build script, and CI that runs it.
 
 [Unreleased]: https://github.com/NCodeGroup/PasswordGenerator/compare/v1.0.1...HEAD

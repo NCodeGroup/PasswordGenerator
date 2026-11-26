@@ -1,3 +1,6 @@
+# Copyright (c) 2026 Marcin Polewski
+# SPDX-License-Identifier: MIT
+
 <#
 .SYNOPSIS
     Keep one open GitHub issue that says a newer project template version is out, with its release notes.
@@ -5,7 +8,9 @@
 .DESCRIPTION
     The template-update workflow (.github/workflows/template-update.yml) runs this script every week. It compares the
     project's template version, from .template-version (or _commit in .copier-answers.yml), with the newest vX.Y.Z tag
-    of the template that _src_path in .copier-answers.yml names, read with git ls-remote.
+    of the template that _src_path in .copier-answers.yml names, read with git ls-remote. When _src_path is a folder
+    that isn't here, such as the clone of the template the project was created from on another PC, it reads the
+    template at https://github.com/NCodeGroup/project-template.git and says so.
 
     When the project is behind, it reads CHANGELOG.md at the newest tag, takes the sections after the project's
     version up to and including that tag, and keeps one open issue labeled template-update, titled
@@ -42,7 +47,7 @@ $label = 'template-update'
 $bodyLimit = 60000
 
 function ConvertTo-TemplateVersion([string]$Text) {
-    if ($Text -notmatch '^v?(\d+(?:\.\d+){0,3})$') { return $null }
+    if ($Text -notmatch '^v?([0-9]+(?:\.[0-9]+){0,3})\z') { return $null }
     $parts = @($Matches[1] -split '\.')
     while ($parts.Count -lt 3) { $parts += '0' }
     [version]($parts -join '.')
@@ -79,7 +84,7 @@ function Get-ChangelogSection([string]$Changelog) {
     foreach ($line in $Changelog.Replace("`r`n", "`n") -split "`n") {
         if ($line -match '^## ') {
             $current = $null
-            if ($line -match '^## \[?v?(\d+\.\d+\.\d+)\]?(?:\s.*)?$') {
+            if ($line -match '^## \[?v?([0-9]+\.[0-9]+\.[0-9]+)\]?(?:\s.*)?\z') {
                 $current = [pscustomobject]@{ Version = [version]$Matches[1]; Lines = [Collections.Generic.List[string]]::new() }
                 $sections.Add($current)
             }
@@ -104,9 +109,15 @@ $src = Get-Answer $answersFile '_src_path'
 if (-not $src) { throw '.copier-answers.yml has no _src_path, the address of the template.' }
 # Copier's shorthands, and the template's old address, which GitHub only redirects. Update-Project.ps1 moves a project
 # off the same old address; change both together.
-if ($src -match '^gh:(.+)$') { $src = "https://github.com/$($Matches[1])" }
-elseif ($src -match '^gl:(.+)$') { $src = "https://gitlab.com/$($Matches[1])" }
-if ($src -match '^https://github\.com/polewskm/project-template(?:\.git)?/?$') { $src = 'https://github.com/NCodeGroup/project-template.git' }
+if ($src -match '^gh:(.+)\z') { $src = "https://github.com/$($Matches[1])" }
+elseif ($src -match '^gl:(.+)\z') { $src = "https://gitlab.com/$($Matches[1])" }
+if ($src -match '^https://github\.com/polewskm/project-template(?:\.git)?/?\z') { $src = 'https://github.com/NCodeGroup/project-template.git' }
+# A project created from a local clone of the template names that folder, which no other PC has: read the
+# template at its address. Update-Project.ps1 moves the project to it; change both together.
+if ($src -notmatch '^(?:[A-Za-z][A-Za-z0-9+.-]+://|gh:|gl:|[^@/\\\s]+@[^:/\\\s]+:)' -and -not (Test-Path -LiteralPath $src -PathType Container)) {
+    "_src_path in .copier-answers.yml names $src, a folder that isn't here, so the template is read at https://github.com/NCodeGroup/project-template.git. The next .\.template\Update-Project.ps1 run moves the project to that address."
+    $src = 'https://github.com/NCodeGroup/project-template.git'
+}
 $web = if ($src -match '^https://github\.com/([^/]+/[^/]+?)(?:\.git)?/?$') { "https://github.com/$($Matches[1])" }
 
 $outputEncoding = [Console]::OutputEncoding

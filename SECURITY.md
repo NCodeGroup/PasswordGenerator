@@ -17,7 +17,7 @@ Include:
 
 ## What to Expect
 
-- An acknowledgement of the report, then whether it is confirmed.
+- An acknowledgement of the report within 14 days, then whether it is confirmed.
 - A fix developed in private and released as soon as it is ready, with an entry under `### Security` in the changelog.
 - Disclosure coordinated with you: the security advisory is published once the fix is released. Keep the details private until then.
 - Credit for the report in the advisory, unless you'd rather not be named.
@@ -33,7 +33,7 @@ Fixes ship as a patch of the latest minor version of the current major version. 
 
 ## Verify a Package
 
-The packages are built in CI from a tagged commit of this repository, deterministically and with Source Link. They reach nuget.org only through the `publish` job of `.github/workflows/main.yml`, which runs when a GitHub release is published and pushes the packages with a NuGet API key kept in the repository's secrets; each package's version is its release's tag.
+The packages are built in CI from a tagged commit of this repository, deterministically and with Source Link. They reach nuget.org only through the `publish` job of `.github/workflows/main.yml`, which runs when a GitHub release is published and pushes the packages with a NuGet API key kept in the repository's secrets; each package's version is its release's tag, which `version.json` must hold: the `build` job fails a release whose packages carry another version.
 
 - Each package's PDB maps every source file to its commit in this repository, and its symbol package (`.snupkg`) is on the nuget.org symbol server. With Source Link and the nuget.org symbol server turned on in your debugger, you step into the exact source a package was built from. NuGet Package Explorer shows whether a package's Source Link and deterministic build are valid.
 - nuget.org signs every package it accepts: `dotnet nuget verify --all <package>.nupkg` checks that signature.

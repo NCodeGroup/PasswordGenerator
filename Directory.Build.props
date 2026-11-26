@@ -6,6 +6,7 @@
 
   <PropertyGroup>
 
+    <PackageValidationBaselineVersion>1.0.1</PackageValidationBaselineVersion>
     <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(MSBuildProjectName).xml</DocumentationFile>
 
   </PropertyGroup>

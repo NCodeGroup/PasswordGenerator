@@ -22,24 +22,34 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      # version.json sets the version (ADR-0138); a release builds and packs it without the -g<commit> suffix.
+      PUBLIC_RELEASE: ${{ github.event_name == 'release' }}
     steps:
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
+        # Nerdbank.GitVersioning computes the version from the history and fails on a shallow clone.
+        fetch-depth: 0
         persist-credentials: false
     - name: Setup .NET
-      uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
-      with:
-        global-json-file: global.json
-        dotnet-version: 6.0.x
-    - name: Extract version from tag
-      uses: dhkatz/get-version-action@9166b8a614609209809cdef096d62b39287139cb # v3.0.0
-      id: extract_version
+      uses: ./.github/actions/install-dotnet
     - name: Restore dependencies
       run: dotnet restore
     - name: Build
-      run: dotnet build --no-restore --configuration ${BUILD_CONFIGURATION} /p:Version="${BUILD_VERSION}"
+      run: dotnet build --no-restore --configuration ${BUILD_CONFIGURATION} -p:PublicRelease=${PUBLIC_RELEASE}
+    # The library doesn't pack on build (GeneratePackageOnBuild races with dotnet pack, NU5026), so pack what was built.
+    - name: Pack
+      run: dotnet pack --no-build --configuration ${BUILD_CONFIGURATION} -p:PublicRelease=${PUBLIC_RELEASE}
+    # Tests the release check below on every event, so a mistake in it shows before a release needs it.
+    - name: Test the release version check
+      shell: pwsh
+      run: ./build/Test-PackageVersion.SelfTest.ps1
+    - name: Check every package has the tag's version
+      if: github.event_name == 'release'
+      shell: pwsh
       env:
-        BUILD_VERSION: ${{ steps.extract_version.outputs.is-semver == 'true' && steps.extract_version.outputs.version-without-v || '0.0.0' }}
+        TAG: ${{ github.event.release.tag_name }}
+      run: ./build/Test-PackageVersion.ps1 -Tag $env:TAG -Path "src/*/bin/$env:BUILD_CONFIGURATION/*.nupkg"
     - name: Upload artifacts
       uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
       with:
@@ -58,16 +68,15 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          # Nerdbank.GitVersioning computes the version from the history and fails on a shallow clone.
+          fetch-depth: 0
           persist-credentials: false
       - name: Download artifacts
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: binaries
       - name: Setup .NET
-        uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
-        with:
-          global-json-file: global.json
-          dotnet-version: 6.0.x
+        uses: ./.github/actions/install-dotnet
       - name: Restore dependencies
         run: dotnet restore
       - name: Run rests
@@ -101,6 +110,8 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          # Nerdbank.GitVersioning computes the version from the history and fails on a shallow clone.
+          fetch-depth: 0
           persist-credentials: false
       - name: Download artifacts
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
@@ -112,10 +123,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAG_NAME: ${{ github.event.release.tag_name }}
       - name: Setup .NET
-        uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
-        with:
-          global-json-file: global.json
-          dotnet-version: 6.0.x
+        uses: ./.github/actions/install-dotnet
       - name: Publish NuGet package
         run: dotnet nuget push ./src/*/bin/${BUILD_CONFIGURATION}/*.nupkg --api-key "$NUGET_APIKEY" --source https://api.nuget.org/v3/index.json
         env:

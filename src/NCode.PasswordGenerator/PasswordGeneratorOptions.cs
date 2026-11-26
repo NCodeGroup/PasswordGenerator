@@ -15,7 +15,7 @@
 //    limitations under the License.
 #endregion
 
-using System.Text;
+using System.Buffers;
 
 namespace NCode.PasswordGenerator;
 
@@ -268,7 +268,20 @@ public class PasswordGeneratorOptions
         return this;
     }
 
-    private string? SpecialOrNull { get; set; }
+    private string? SpecialOrNull
+    {
+        get;
+        set
+        {
+            field = value;
+            SpecialSearchValuesOrNull = null;
+        }
+    }
+
+    private SearchValues<char>? SpecialSearchValuesOrNull { get; set; }
+
+    private SearchValues<char> SpecialSearchValues =>
+        SpecialSearchValuesOrNull ??= SearchValues.Create(SpecialCharacters);
 
     /// <summary>
     /// Gets or sets the list of special characters such as punctuations and symbols that are to be included in the generated password.
@@ -295,12 +308,11 @@ public class PasswordGeneratorOptions
     {
         get
         {
-            var builder = new StringBuilder();
-            if (MinLowercaseCharacters > 0) builder.Append(LowercaseCharacters);
-            if (MinUppercaseCharacters > 0) builder.Append(UppercaseCharacters);
-            if (MinNumericCharacters > 0) builder.Append(NumericCharacters);
-            if (MinSpecialCharacters > 0) builder.Append(SpecialCharacters);
-            return builder.ToString();
+            var lowercase = MinLowercaseCharacters > 0 ? LowercaseCharacters : string.Empty;
+            var uppercase = MinUppercaseCharacters > 0 ? UppercaseCharacters : string.Empty;
+            var numeric = MinNumericCharacters > 0 ? NumericCharacters : string.Empty;
+            var special = MinSpecialCharacters > 0 ? SpecialCharacters : string.Empty;
+            return string.Concat(lowercase, uppercase, numeric, special);
         }
     }
 
@@ -338,6 +350,7 @@ public class PasswordGeneratorOptions
         var countNumeric = 0;
         var countLowercase = 0;
         var countUppercase = 0;
+        var special = SpecialSearchValues;
 
         for (var i = 0; i < password.Length; ++i)
         {
@@ -349,7 +362,7 @@ public class PasswordGeneratorOptions
             var c = password[i];
 
             // FYI, special may overlap with numeric and alpha
-            if (SpecialCharacters.Contains(c))
+            if (special.Contains(c))
             {
                 ++countSpecial;
             }

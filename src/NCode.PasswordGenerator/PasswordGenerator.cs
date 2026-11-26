@@ -1,6 +1,7 @@
 // Copyright © NCode Group
 // SPDX-License-Identifier: Apache-2.0
 
+using System.Buffers;
 using System.Collections;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
@@ -56,6 +57,44 @@ public interface IPasswordGenerator : IEnumerable<string>
     /// <param name="options">The <see cref="PasswordGeneratorOptions"/> that defines the rules for generating passwords.</param>
     /// <param name="password">The destination buffer for the newly generated password.</param>
     void Generate(PasswordGeneratorOptions options, Span<char> password);
+
+    /// <summary>
+    /// Generates a random password using the default options, into a pinned buffer that is zeroed when disposed.
+    /// </summary>
+    /// <returns>
+    /// The owner of the buffer that holds the newly generated password. Dispose it as soon as the password is no
+    /// longer needed; its <see cref="IMemoryOwner{T}.Memory"/> throws <see cref="ObjectDisposedException"/> afterwards.
+    /// </returns>
+    /// <exception cref="NotSupportedException">The implementation doesn't override this member.</exception>
+    IMemoryOwner<char> GeneratePinned() =>
+        throw new NotSupportedException(PinnedNotSupportedMessage);
+
+    /// <summary>
+    /// Generates a random password using the rules from the specified <paramref name="optionsConfigurator"/>, into a pinned buffer that is zeroed when disposed.
+    /// </summary>
+    /// <param name="optionsConfigurator">A callback method that is invoked to configure the <see cref="PasswordGeneratorOptions"/>.</param>
+    /// <returns>
+    /// The owner of the buffer that holds the newly generated password. Dispose it as soon as the password is no
+    /// longer needed; its <see cref="IMemoryOwner{T}.Memory"/> throws <see cref="ObjectDisposedException"/> afterwards.
+    /// </returns>
+    /// <exception cref="NotSupportedException">The implementation doesn't override this member.</exception>
+    IMemoryOwner<char> GeneratePinned(Action<PasswordGeneratorOptions> optionsConfigurator) =>
+        throw new NotSupportedException(PinnedNotSupportedMessage);
+
+    /// <summary>
+    /// Generates a random password using the rules from the specified <paramref name="options"/>, into a pinned buffer that is zeroed when disposed.
+    /// </summary>
+    /// <param name="options">The <see cref="PasswordGeneratorOptions"/> that defines the rules for generating passwords.</param>
+    /// <returns>
+    /// The owner of the buffer that holds the newly generated password. Dispose it as soon as the password is no
+    /// longer needed; its <see cref="IMemoryOwner{T}.Memory"/> throws <see cref="ObjectDisposedException"/> afterwards.
+    /// </returns>
+    /// <exception cref="NotSupportedException">The implementation doesn't override this member.</exception>
+    IMemoryOwner<char> GeneratePinned(PasswordGeneratorOptions options) =>
+        throw new NotSupportedException(PinnedNotSupportedMessage);
+
+    private const string PinnedNotSupportedMessage =
+        "This IPasswordGenerator implementation doesn't generate passwords into pinned buffers.";
 }
 
 /// <summary>
@@ -229,6 +268,30 @@ public class PasswordGenerator : IPasswordGenerator
         FillRandom(characterSet, remaining.Length, remaining);
 
         RandomNumberGenerator.Shuffle(password);
+    }
+
+    /// <inheritdoc />
+    public IMemoryOwner<char> GeneratePinned() =>
+        GeneratePinned(DefaultOptions);
+
+    /// <inheritdoc />
+    public IMemoryOwner<char> GeneratePinned(Action<PasswordGeneratorOptions> optionsConfigurator) =>
+        GeneratePinned(Configure(optionsConfigurator));
+
+    /// <inheritdoc />
+    public IMemoryOwner<char> GeneratePinned(PasswordGeneratorOptions options)
+    {
+        var buffer = new PinnedPasswordBuffer(GetLength(options));
+        try
+        {
+            Generate(options, buffer.Memory.Span);
+            return buffer;
+        }
+        catch
+        {
+            buffer.Dispose();
+            throw;
+        }
     }
 
     /// <inheritdoc />

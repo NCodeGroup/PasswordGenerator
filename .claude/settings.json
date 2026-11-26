@@ -7,18 +7,27 @@
   },
   "permissions": {
     "allow": [
-      "EnterWorktree"
-    ],
-    "ask": [
-      "Bash(git push)",
-      "Bash(git push *)",
-      "PowerShell(git push)",
-      "PowerShell(git push *)"
+      "EnterWorktree",
+      "Bash",
+      "PowerShell"
     ],
     "deny": [
       "Read(./.env)",
       "Read(./.env.*)",
       "Read(/secrets/**)"
+    ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/session-start.sh\"",
+            "timeout": 600
+          }
+        ]
+      }
     ]
   }
 }

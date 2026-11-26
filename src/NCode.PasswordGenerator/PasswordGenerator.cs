@@ -82,6 +82,25 @@ public class PasswordGenerator : IPasswordGenerator
     /// </summary>
     public static IPasswordGenerator Default { get; } = new PasswordGenerator();
 
+    /// <summary>
+    /// Fills the start of <paramref name="destination"/> with characters chosen at random from <paramref name="choices"/>.
+    /// </summary>
+    /// <param name="choices">The characters to choose from.</param>
+    /// <param name="count">
+    /// How many characters to fill: none when zero or less, and all of <paramref name="destination"/> when larger.
+    /// </param>
+    /// <param name="destination">The buffer to fill.</param>
+    /// <returns>The part of <paramref name="destination"/> after the filled characters.</returns>
+    private static Span<char> FillRandom(ReadOnlySpan<char> choices, int count, Span<char> destination)
+    {
+        var take = Math.Min(count, destination.Length);
+        if (take <= 0)
+            return destination;
+
+        RandomNumberGenerator.GetItems(choices, destination[..take]);
+        return destination[take..];
+    }
+
     private PasswordGeneratorOptions DefaultOptions { get; }
 
     /// <summary>
@@ -224,25 +243,6 @@ public class PasswordGenerator : IPasswordGenerator
         FillRandom(characterSet, remaining.Length, remaining);
 
         RandomNumberGenerator.Shuffle(password);
-    }
-
-    /// <summary>
-    /// Fills the start of <paramref name="destination"/> with characters chosen at random from <paramref name="choices"/>.
-    /// </summary>
-    /// <param name="choices">The characters to choose from.</param>
-    /// <param name="count">
-    /// How many characters to fill: none when zero or less, and all of <paramref name="destination"/> when larger.
-    /// </param>
-    /// <param name="destination">The buffer to fill.</param>
-    /// <returns>The part of <paramref name="destination"/> after the filled characters.</returns>
-    private static Span<char> FillRandom(ReadOnlySpan<char> choices, int count, Span<char> destination)
-    {
-        var take = Math.Min(count, destination.Length);
-        if (take <= 0)
-            return destination;
-
-        RandomNumberGenerator.GetItems(choices, destination[..take]);
-        return destination[take..];
     }
 
     /// <inheritdoc />

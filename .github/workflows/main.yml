@@ -45,8 +45,10 @@ jobs:
       with:
         name: binaries
         path: |
-          ./*/bin/*
-          ./*/obj/*
+          ./src/*/bin/*
+          ./src/*/obj/*
+          ./tests/*/bin/*
+          ./tests/*/obj/*
         if-no-files-found: error
         retention-days: 5
 
@@ -105,7 +107,7 @@ jobs:
         with:
           name: binaries
       - name: Upload release artifacts
-        run: gh release upload "$TAG_NAME" ./*/bin/${BUILD_CONFIGURATION}/*.nupkg ./*/bin/${BUILD_CONFIGURATION}/*.snupkg
+        run: gh release upload "$TAG_NAME" ./src/*/bin/${BUILD_CONFIGURATION}/*.nupkg ./src/*/bin/${BUILD_CONFIGURATION}/*.snupkg
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAG_NAME: ${{ github.event.release.tag_name }}
@@ -115,6 +117,6 @@ jobs:
           global-json-file: global.json
           dotnet-version: 6.0.x
       - name: Publish NuGet package
-        run: dotnet nuget push ./*/bin/${BUILD_CONFIGURATION}/*.nupkg --api-key "$NUGET_APIKEY" --source https://api.nuget.org/v3/index.json
+        run: dotnet nuget push ./src/*/bin/${BUILD_CONFIGURATION}/*.nupkg --api-key "$NUGET_APIKEY" --source https://api.nuget.org/v3/index.json
         env:
           NUGET_APIKEY: ${{ secrets.NUGET_APIKEY }}

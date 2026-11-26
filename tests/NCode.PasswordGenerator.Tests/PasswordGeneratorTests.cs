@@ -199,7 +199,8 @@ public class PasswordGeneratorTests : BaseTests
 
         var password = PasswordGenerator.Generate(options);
 
-        Assert.True(options.IsValid(password));
+        var isValid = options.IsValid(password);
+        Assert.True(isValid);
     }
 
     [Fact]

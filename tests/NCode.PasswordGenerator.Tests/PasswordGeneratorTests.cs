@@ -243,7 +243,7 @@ public class PasswordGeneratorTests : BaseTests
         DefaultOptions.SetLengthRange(0, 10);
 
         MockPasswordGenerator
-            .Setup(_ => _.GetRandomInt32(0, 11))
+            .Setup(x => x.GetRandomInt32(0, 11))
             .Returns(0)
             .Verifiable();
 
@@ -272,7 +272,7 @@ public class PasswordGeneratorTests : BaseTests
 
         bool? isValidResult = false;
         MockPasswordGenerator
-            .Setup(_ => _.SkipIsValid(out isValidResult))
+            .Setup(x => x.SkipIsValid(out isValidResult))
             .Returns(true)
             .Verifiable();
 
@@ -389,13 +389,13 @@ public class PasswordGeneratorTests : BaseTests
 
         var buffer = new PinnedPasswordBuffer(16);
         MockPasswordGenerator
-            .Setup(_ => _.CreatePinnedBuffer(16))
+            .Setup(x => x.CreatePinnedBuffer(16))
             .Returns(buffer)
             .Verifiable();
 
         bool? isValidResult = false;
         MockPasswordGenerator
-            .Setup(_ => _.SkipIsValid(out isValidResult))
+            .Setup(x => x.SkipIsValid(out isValidResult))
             .Returns(true)
             .Verifiable();
 

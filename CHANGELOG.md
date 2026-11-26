@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.
 - Public API tracking with `PublicAPI.Shipped.txt` and `PublicAPI.Unshipped.txt`; the public API of v1.0.1 is recorded as shipped and is unchanged.
 - Every pack validates the package against the last published version, 1.0.1, so a change that breaks its public API fails the build.
 - The package declares itself trim- and Native AOT-compatible (`IsAotCompatible`), so the build reports any change that would break a trimmed or AOT-compiled app. ([#24](https://github.com/NCodeGroup/PasswordGenerator/issues/24))
+- `IPasswordGenerator.GeneratePinned` returns a password in a buffer on the pinned object heap, which the garbage collector never copies, and zeroes it when disposed, so an application can clear a password after use; the overloads take the default options, a callback that adjusts them, or options passed in. An `IPasswordGenerator` implemented outside the library throws `NotSupportedException` from them until it overrides them. ([#37](https://github.com/NCodeGroup/PasswordGenerator/issues/37), [ADR-1001](docs/decisions/1001-pinned-password-buffers-are-default-interface-members.md))
 
 ### Changed
 
@@ -20,14 +21,21 @@ The format is based on [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.
 - Updated the project to project-template v0.114.1: the version of every assembly and package comes from `version.json` through Nerdbank.GitVersioning, so a release's tag must name the version `version.json` holds, and the release workflow fails when it doesn't; NCode Review approves a clean pull request, and pull requests open as drafts; the project gains a code of conduct, governance, roadmap, architecture and assurance case documents.
 - Passwords are filled and shuffled with `RandomNumberGenerator.GetItems` and `RandomNumberGenerator.Shuffle`, and `PasswordGeneratorOptions.IsValid` looks up special characters with `SearchValues<char>`; the rules a generated password meets are unchanged. ([#24](https://github.com/NCodeGroup/PasswordGenerator/issues/24))
 - **Breaking:** Generating a password with `MinSpecialCharacters` above zero and an empty `SpecialCharacters` throws `ArgumentException` instead of its subclass `ArgumentOutOfRangeException`; code that catches `ArgumentOutOfRangeException` for this case must catch `ArgumentException` instead. ([#24](https://github.com/NCodeGroup/PasswordGenerator/issues/24))
+- Packages are published to nuget.org by `.github/workflows/publish.yml` through nuget.org trusted publishing, from the protected `nuget` environment and with no long-lived API key, and each release carries build provenance and an SBOM; `.github/workflows/raise-baseline.yml` raises the package validation baseline after each release. ([#11](https://github.com/NCodeGroup/PasswordGenerator/issues/11), [#32](https://github.com/NCodeGroup/PasswordGenerator/issues/32))
+- Every C# file starts with the two-line SPDX header, `// Copyright © NCode Group` and `// SPDX-License-Identifier: Apache-2.0`, and the Rider settings generate it. ([#38](https://github.com/NCodeGroup/PasswordGenerator/issues/38))
+- The solution is `NCode.PasswordGenerator.slnx`, the build settings the project template already makes are no longer repeated, and no file starts with a UTF-8 byte order mark; the package's contents, Source Link and symbols are unchanged. ([#30](https://github.com/NCodeGroup/PasswordGenerator/issues/30))
 
 ### Removed
 
 - **Breaking:** Support for .NET Standard 2.1. The package targets .NET 10 (`net10.0`) only and is released as 2.0.0; apps on .NET 6–9, Unity, Mono or Xamarin stay on the 1.x packages. The public API is unchanged, so a .NET 10 app upgrades without code changes. ([#24](https://github.com/NCodeGroup/PasswordGenerator/issues/24), [ADR-1000](docs/decisions/1000-the-library-targets-the-newest-dotnet-lts-release.md))
+- `.github/workflows/main.yml` and its `build/Test-PackageVersion.ps1` checks: `.github/workflows/ci.yml` builds and tests every change, and the README's badge shows it. ([#32](https://github.com/NCodeGroup/PasswordGenerator/issues/32), [#11](https://github.com/NCodeGroup/PasswordGenerator/issues/11))
 
 ### Fixed
 
 - The NuGet package has its description and tags, which were set in a file the build never read. ([#22](https://github.com/NCodeGroup/PasswordGenerator/issues/22))
+- The `Span<char>` overloads of `Generate` clear the caller's buffer before they throw `InvalidOperationException` ("Too many attempts."), so the last rejected attempt isn't left in it. ([#36](https://github.com/NCodeGroup/PasswordGenerator/issues/36))
+- The documentation of `IPasswordGenerator` says enumerating it yields `MaxEnumerations` passwords, 100 by default, instead of an infinite sequence. ([#29](https://github.com/NCodeGroup/PasswordGenerator/issues/29))
+- **Breaking:** The `Generate` overloads that return a `string` throw `InvalidOperationException` ("The requested password length is too small.") when the length drawn from the options is 0 or less, instead of returning an empty string that was never validated (a length of 0) or throwing `ArgumentOutOfRangeException` (a negative length); `GeneratePinned` does the same. Keep `MinLength` at 1 or more, or catch `InvalidOperationException`. ([#28](https://github.com/NCodeGroup/PasswordGenerator/issues/28))
 
 ## [1.0.1] - 2023-07-16
 

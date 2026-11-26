@@ -302,18 +302,40 @@ public class PasswordGenerator : IPasswordGenerator
         RandomNumberGenerator.Shuffle(password);
     }
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Generates a random password using the default options, into a pinned buffer that is zeroed when disposed.
+    /// </summary>
+    /// <returns>
+    /// The owner of the buffer that holds the newly generated password. Dispose it as soon as the password is no
+    /// longer needed; its <see cref="IMemoryOwner{T}.Memory"/> throws <see cref="ObjectDisposedException"/> afterwards.
+    /// </returns>
     public IMemoryOwner<char> GeneratePinned() =>
         GeneratePinned(DefaultOptions);
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Generates a random password using the rules from the specified <paramref name="optionsConfigurator"/>, into a
+    /// pinned buffer that is zeroed when disposed.
+    /// </summary>
+    /// <param name="optionsConfigurator">A callback method that is invoked to configure the <see cref="PasswordGeneratorOptions"/>.</param>
+    /// <returns>
+    /// The owner of the buffer that holds the newly generated password. Dispose it as soon as the password is no
+    /// longer needed; its <see cref="IMemoryOwner{T}.Memory"/> throws <see cref="ObjectDisposedException"/> afterwards.
+    /// </returns>
     public IMemoryOwner<char> GeneratePinned(Action<PasswordGeneratorOptions> optionsConfigurator)
     {
         var options = Configure(optionsConfigurator);
         return GeneratePinned(options);
     }
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Generates a random password using the rules from the specified <paramref name="options"/>, into a
+    /// pinned buffer that is zeroed when disposed.
+    /// </summary>
+    /// <param name="options">The <see cref="PasswordGeneratorOptions"/> that defines the rules for generating passwords.</param>
+    /// <returns>
+    /// The owner of the buffer that holds the newly generated password. Dispose it as soon as the password is no
+    /// longer needed; its <see cref="IMemoryOwner{T}.Memory"/> throws <see cref="ObjectDisposedException"/> afterwards.
+    /// </returns>
     public IMemoryOwner<char> GeneratePinned(PasswordGeneratorOptions options)
     {
         var length = GetLength(options);

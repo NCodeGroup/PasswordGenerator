@@ -1,16 +1,16 @@
 # Contributing to NCode.PasswordGenerator
 
-Issues and pull requests are welcome. [README.md](README.md) explains the project, and [AGENTS.md](AGENTS.md) holds the rules every change follows, for people and coding agents alike. Report a vulnerability privately instead, as [SECURITY.md](SECURITY.md) says.
+Issues and pull requests are welcome. [README.md](README.md) explains the project, and [AGENTS.md](AGENTS.md) holds the rules every change follows, for people and coding agents alike. Report a vulnerability privately instead, as [SECURITY.md](SECURITY.md) says. Everyone taking part follows the [Code of Conduct](CODE_OF_CONDUCT.md); [GOVERNANCE.md](GOVERNANCE.md) says who decides what, and [ROADMAP.md](ROADMAP.md) where the project is going. Issues labeled `good first issue` are small, self-contained tasks for a first contribution.
 
 ## Prerequisites
 
 - Git, and PowerShell 7 (`pwsh`): every command here runs from the repository root in PowerShell 7.
-- The .NET SDK version that [global.json](global.json) pins.
-- On Windows, `git config --global core.longpaths true`, once: a Claude Code plan's worktree under `.claude/worktrees/` can pass Windows' 260-character path limit.
+- The .NET SDK that [global.json](global.json) selects, and the runtime of each older .NET a test project targets, which `./build/Get-TestRuntimes.ps1` names. `./build/Install-Dotnet.ps1` installs both beside the .NET that runs `dotnet`, or into the folder `-InstallDir` names; run it as an administrator, or with `sudo`, when .NET is installed system-wide.
+- On Windows, `git config --global core.longpaths true`, once: a plan's worktree under `.claude/worktrees/` can pass Windows' 260-character path limit.
 
 ## Set Up
 
-Once in each clone, run `git config core.hooksPath .githooks`. It turns on `.githooks/commit-msg`, which strips AI attribution from commit messages, and `.githooks/pre-push`, which refuses a push to the default branch when the Landing section of `AGENTS.md` says `protect: hook`. When the clone already runs another tool's hooks, such as pre-commit, leave its hooks path alone: the rules below still apply, and CI still checks them.
+Once in each clone, run `git config core.hooksPath .githooks`. It turns on `.githooks/pre-push`, which refuses a push to the default branch when the Landing section of `AGENTS.md` says `protect: hook`. When the clone already runs another tool's hooks, such as pre-commit, leave its hooks path alone.
 
 ## Build and Test
 

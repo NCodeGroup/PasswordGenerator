@@ -181,21 +181,11 @@ public class PasswordGenerator : IPasswordGenerator
     }
 
     internal virtual string FisherYatesShuffle(string value) =>
-        string.Create(value.Length, value, (dst, src) =>
+        string.Create(value.Length, value, static (dst, src) =>
         {
             src.AsSpan().CopyTo(dst);
-            FisherYatesShuffle(dst);
+            RandomNumberGenerator.Shuffle(dst);
         });
-
-    private void FisherYatesShuffle(Span<char> chars)
-    {
-        for (var i = 0; i < chars.Length - 1; ++i)
-        {
-            var j = GetRandomInt32(i, chars.Length);
-            if (i == j) continue;
-            (chars[i], chars[j]) = (chars[j], chars[i]);
-        }
-    }
 
     internal int GetLength(PasswordGeneratorOptions options) =>
         options.MinLength == options.MaxLength
@@ -268,7 +258,7 @@ public class PasswordGenerator : IPasswordGenerator
             }
         }
 
-        FisherYatesShuffle(password);
+        RandomNumberGenerator.Shuffle(password);
     }
 
     /// <inheritdoc />

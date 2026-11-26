@@ -41,8 +41,8 @@ How the application stores, sends or shows a password is outside the boundary.
 | Threat | In scope | Countered by |
 | --- | --- | --- |
 | Passwords are predictable because they come from a seeded or non-cryptographic generator | Yes | R1 |
-| The required characters sit at predictable positions, because each class's minimum count is placed first | Yes | R1: a Fisher–Yates shuffle of the whole password, drawn from `RandomNumberGenerator` |
-| Some characters are likelier than others because a random number is reduced with a modulo | Yes | R1: `RandomNumberGenerator.GetInt32` draws an unbiased value within its range |
+| The required characters sit at predictable positions, because each class's minimum count is placed first | Yes | R1: `RandomNumberGenerator.Shuffle`, a Fisher–Yates shuffle of the whole password |
+| Some characters are likelier than others because a random number is reduced with a modulo | Yes | R1: `RandomNumberGenerator.GetItems` picks each character and `RandomNumberGenerator.GetInt32` the length, each an unbiased value within its range |
 | A password weaker than the options ask for is returned | Yes | R2: `PasswordGeneratorOptions.IsValid` checks each password before it is returned, except a length of 0; see A length of zero above |
 | Options that can't be met yield a shorter or weaker password instead of an error | Yes | R3, except a length of 0; see A length of zero above |
 | The application chooses weak options | No | The application owns its options; see Strength of the options above |

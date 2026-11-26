@@ -189,6 +189,56 @@ public class PasswordGeneratorTests : BaseTests
     }
 
     [Fact]
+    public void Generate_GivenEmptySpecialCharactersAndNoMinSpecial_ThenValid()
+    {
+        var options = new PasswordGeneratorOptions
+        {
+            MinSpecialCharacters = 0,
+            SpecialCharacters = string.Empty,
+        };
+
+        var password = PasswordGenerator.Generate(options);
+
+        var isValid = options.IsValid(password);
+        Assert.True(isValid);
+    }
+
+    [Fact]
+    public void Generate_GivenEmptySpecialCharactersAndMinSpecial_ThenThrowsArgumentException()
+    {
+        var options = new PasswordGeneratorOptions
+        {
+            MinSpecialCharacters = 1,
+            SpecialCharacters = string.Empty,
+        };
+
+        var exception = Assert.Throws<ArgumentException>(() =>
+            PasswordGenerator.Generate(options));
+
+        Assert.Equal("choices", exception.ParamName);
+    }
+
+    [Fact]
+    public void Generate_GivenNegativeMinimumAndUnreachableMinimum_ThenTooManyAttempts()
+    {
+        var options = new PasswordGeneratorOptions
+        {
+            MaxAttempts = 1,
+            MinSpecialCharacters = -5,
+            MinNumericCharacters = 20,
+            MinLowercaseCharacters = 0,
+            MinUppercaseCharacters = 0,
+        };
+
+        options.SetExactLength(16);
+
+        var exception = Assert.Throws<InvalidOperationException>(() =>
+            PasswordGenerator.Generate(options));
+
+        Assert.Equal("Too many attempts.", exception.Message);
+    }
+
+    [Fact]
     public void GetLength_GivenEqualMinMax_ThenSame()
     {
         const int length = 7;

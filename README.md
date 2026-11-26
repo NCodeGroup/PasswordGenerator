@@ -1,5 +1,6 @@
 [DI]: https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection
 [.NET Standard 2.1]: https://learn.microsoft.com/en-us/dotnet/standard/net-standard?tabs=net-standard-2-1
+[.NET 10]: https://learn.microsoft.com/dotnet/core/whats-new/dotnet-10/overview
 
 ![ci](https://github.com/NCodeGroup/PasswordGenerator/actions/workflows/main.yml/badge.svg)
 
@@ -7,7 +8,7 @@
 This [DI] friendly library provides the ability to generate strong cryptographically random passwords that meet the OWASP requirements (length, lower case, upper case, numeric, and special characters).
 
 # Requirements
-- [.NET Standard 2.1] - for Span API, which does NOT allow usage from .NET Framework, sorry
+- [.NET 10] or later. Version 1.x of the package targets [.NET Standard 2.1], for apps on older runtimes.
 
 # Usage
 ```csharp

@@ -62,5 +62,4 @@ override in `AGENTS.md`.
 
 | ADR | Decision | Status |
 | --- | --- | --- |
-
-NCode.PasswordGenerator has no decision records of its own yet; its records are numbered from 1000.
+| [1000](1000-the-library-targets-the-newest-dotnet-lts-release.md) | The library targets the newest .NET LTS release only; consumers on older runtimes stay on the previous major version | Accepted |

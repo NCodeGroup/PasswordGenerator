@@ -82,6 +82,25 @@ public class PasswordGenerator : IPasswordGenerator
     /// </summary>
     public static IPasswordGenerator Default { get; } = new PasswordGenerator();
 
+    /// <summary>
+    /// Fills the start of <paramref name="destination"/> with characters chosen at random from <paramref name="choices"/>.
+    /// </summary>
+    /// <param name="choices">The characters to choose from.</param>
+    /// <param name="count">
+    /// How many characters to fill: none when zero or less, and all of <paramref name="destination"/> when larger.
+    /// </param>
+    /// <param name="destination">The buffer to fill.</param>
+    /// <returns>The part of <paramref name="destination"/> after the filled characters.</returns>
+    private static Span<char> FillRandom(ReadOnlySpan<char> choices, int count, Span<char> destination)
+    {
+        var take = Math.Min(count, destination.Length);
+        if (take <= 0)
+            return destination;
+
+        RandomNumberGenerator.GetItems(choices, destination[..take]);
+        return destination[take..];
+    }
+
     private PasswordGeneratorOptions DefaultOptions { get; }
 
     /// <summary>
@@ -111,10 +130,6 @@ public class PasswordGenerator : IPasswordGenerator
     {
         // nothing
     }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal virtual int GetRandomInt32(int toExclusive) =>
-        RandomNumberGenerator.GetInt32(toExclusive);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal virtual int GetRandomInt32(int fromInclusive, int toExclusive) =>
@@ -181,21 +196,11 @@ public class PasswordGenerator : IPasswordGenerator
     }
 
     internal virtual string FisherYatesShuffle(string value) =>
-        string.Create(value.Length, value, (dst, src) =>
+        string.Create(value.Length, value, static (dst, src) =>
         {
             src.AsSpan().CopyTo(dst);
-            FisherYatesShuffle(dst);
+            RandomNumberGenerator.Shuffle(dst);
         });
-
-    private void FisherYatesShuffle(Span<char> chars)
-    {
-        for (var i = 0; i < chars.Length - 1; ++i)
-        {
-            var j = GetRandomInt32(i, chars.Length);
-            if (i == j) continue;
-            (chars[i], chars[j]) = (chars[j], chars[i]);
-        }
-    }
 
     internal int GetLength(PasswordGeneratorOptions options) =>
         options.MinLength == options.MaxLength
@@ -230,45 +235,14 @@ public class PasswordGenerator : IPasswordGenerator
             return;
         }
 
-        var special = options.SpecialCharacters;
-        const string numeric = PasswordGeneratorOptions.NumericCharacters;
-        const string lowercase = PasswordGeneratorOptions.LowercaseCharacters;
-        const string uppercase = PasswordGeneratorOptions.UppercaseCharacters;
+        var remaining = password;
+        remaining = FillRandom(options.SpecialCharacters, options.MinSpecialCharacters, remaining);
+        remaining = FillRandom(PasswordGeneratorOptions.NumericCharacters, options.MinNumericCharacters, remaining);
+        remaining = FillRandom(PasswordGeneratorOptions.LowercaseCharacters, options.MinLowercaseCharacters, remaining);
+        remaining = FillRandom(PasswordGeneratorOptions.UppercaseCharacters, options.MinUppercaseCharacters, remaining);
+        FillRandom(characterSet, remaining.Length, remaining);
 
-        var remainingSpecial = options.MinSpecialCharacters;
-        var remainingNumeric = options.MinNumericCharacters;
-        var remainingLowercase = options.MinLowercaseCharacters;
-        var remainingUppercase = options.MinUppercaseCharacters;
-
-        for (var i = 0; i < password.Length; ++i)
-        {
-            if (remainingSpecial > 0)
-            {
-                password[i] = special[GetRandomInt32(special.Length)];
-                --remainingSpecial;
-            }
-            else if (remainingNumeric > 0)
-            {
-                password[i] = numeric[GetRandomInt32(numeric.Length)];
-                --remainingNumeric;
-            }
-            else if (remainingLowercase > 0)
-            {
-                password[i] = lowercase[GetRandomInt32(lowercase.Length)];
-                --remainingLowercase;
-            }
-            else if (remainingUppercase > 0)
-            {
-                password[i] = uppercase[GetRandomInt32(uppercase.Length)];
-                --remainingUppercase;
-            }
-            else
-            {
-                password[i] = characterSet[GetRandomInt32(characterSet.Length)];
-            }
-        }
-
-        FisherYatesShuffle(password);
+        RandomNumberGenerator.Shuffle(password);
     }
 
     /// <inheritdoc />

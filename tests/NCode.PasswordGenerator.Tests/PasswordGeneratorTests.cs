@@ -382,6 +382,31 @@ public class PasswordGeneratorTests : BaseTests
     }
 
     [Fact]
+    public void GeneratePinned_GivenOptions_WhenTooManyAttempts_ThenDisposesBuffer()
+    {
+        DefaultOptions.SetExactLength(16);
+        DefaultOptions.MaxAttempts = 10;
+
+        var buffer = new PinnedPasswordBuffer(16);
+        MockPasswordGenerator
+            .Setup(_ => _.CreatePinnedBuffer(16))
+            .Returns(buffer)
+            .Verifiable();
+
+        bool? isValidResult = false;
+        MockPasswordGenerator
+            .Setup(_ => _.SkipIsValid(out isValidResult))
+            .Returns(true)
+            .Verifiable();
+
+        var exception = Assert.Throws<InvalidOperationException>(() =>
+            PasswordGenerator.GeneratePinned(DefaultOptions));
+
+        Assert.Equal("Too many attempts.", exception.Message);
+        Assert.Throws<ObjectDisposedException>(() => buffer.Memory);
+    }
+
+    [Fact]
     public void GeneratePinned_GivenImplementationWithoutOverride_ThenThrows()
     {
         IPasswordGenerator generator = new LegacyPasswordGenerator();

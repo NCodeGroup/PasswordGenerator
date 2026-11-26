@@ -241,6 +241,9 @@ public class PasswordGenerator : IPasswordGenerator
         return length;
     }
 
+    internal virtual PinnedPasswordBuffer CreatePinnedBuffer(int length) =>
+        new(length);
+
     // for unit tests
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal virtual bool SkipIsValid([NotNullWhen(true)] out bool? result)
@@ -294,7 +297,7 @@ public class PasswordGenerator : IPasswordGenerator
     public IMemoryOwner<char> GeneratePinned(PasswordGeneratorOptions options)
     {
         var length = GetLength(options);
-        var buffer = new PinnedPasswordBuffer(length);
+        var buffer = CreatePinnedBuffer(length);
         try
         {
             Generate(options, buffer.Memory.Span);

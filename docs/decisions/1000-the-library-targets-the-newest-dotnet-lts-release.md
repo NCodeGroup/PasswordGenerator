@@ -13,7 +13,8 @@ Standard or an older runtime can use them only behind conditional compilation, w
 older target.
 
 Microsoft ships a major .NET release every November. A Long Term Support (LTS) release gets three years of support and
-a Standard Term Support (STS) release two ([.NET support policy](https://dotnet.microsoft.com/platform/support/policy/dotnet-core)).
+a Standard Term Support (STS) release two
+([.NET support policy](https://dotnet.microsoft.com/platform/support/policy/dotnet-core), read 2026-11-26).
 A library built for an LTS release runs on every later release, LTS or STS. The consumers a .NET Standard target still
 reaches are Unity, Mono, Xamarin and runtimes that are out of support.
 
@@ -22,7 +23,7 @@ reaches are Unity, Mono, Xamarin and runtimes that are out of support.
 The library targets one framework, the newest .NET LTS release, and declares `IsAotCompatible`. Moving to a newer LTS
 release drops the previous target, which breaks consumers still on it, so each move ships as a major version, and the
 packages of the previous major version stay on nuget.org for those consumers. A move changes no public API by itself,
-so an app on the new target upgrades without code changes.
+so an app already on the target it moves to upgrades without code changes.
 
 The library's project file, `src/NCode.PasswordGenerator/NCode.PasswordGenerator.csproj`, names the current target,
 and [README.md](../../README.md#requirements) states the runtime it needs.

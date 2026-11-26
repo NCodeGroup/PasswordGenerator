@@ -227,6 +227,44 @@ public class PasswordGeneratorTests : BaseTests
     }
 
     [Fact]
+    public void Generate_GivenExactLengthZero_ThenThrows()
+    {
+        DefaultOptions.SetExactLength(0);
+
+        var exception = Assert.Throws<InvalidOperationException>(() =>
+            PasswordGenerator.Generate(DefaultOptions));
+
+        Assert.Equal("The requested password length is too small.", exception.Message);
+    }
+
+    [Fact]
+    public void Generate_GivenRangeFromZero_WhenZeroDrawn_ThenThrows()
+    {
+        DefaultOptions.SetLengthRange(0, 10);
+
+        MockPasswordGenerator
+            .Setup(_ => _.GetRandomInt32(0, 11))
+            .Returns(0)
+            .Verifiable();
+
+        var exception = Assert.Throws<InvalidOperationException>(() =>
+            PasswordGenerator.Generate(DefaultOptions));
+
+        Assert.Equal("The requested password length is too small.", exception.Message);
+    }
+
+    [Fact]
+    public void Generate_GivenNegativeExactLength_ThenThrows()
+    {
+        DefaultOptions.SetExactLength(-1);
+
+        var exception = Assert.Throws<InvalidOperationException>(() =>
+            PasswordGenerator.Generate(DefaultOptions));
+
+        Assert.Equal("The requested password length is too small.", exception.Message);
+    }
+
+    [Fact]
     public void Generate_GivenSpan_WhenTooManyAttempts_ThenCleared()
     {
         DefaultOptions.MaxAttempts = 3;
@@ -327,6 +365,17 @@ public class PasswordGeneratorTests : BaseTests
 
         Assert.InRange(password.Memory.Length, 16, 32);
         Assert.True(DefaultOptions.IsValid(password.Memory.Span));
+    }
+
+    [Fact]
+    public void GeneratePinned_GivenExactLengthZero_ThenThrows()
+    {
+        DefaultOptions.SetExactLength(0);
+
+        var exception = Assert.Throws<InvalidOperationException>(() =>
+            PasswordGenerator.GeneratePinned(DefaultOptions));
+
+        Assert.Equal("The requested password length is too small.", exception.Message);
     }
 
     [Fact]

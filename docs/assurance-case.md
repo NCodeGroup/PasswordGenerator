@@ -11,9 +11,9 @@ the user-facing summary.
 - **R1.** Every random choice, the password's length, each of its characters and their order, comes from
   `System.Security.Cryptography.RandomNumberGenerator`, the platform's cryptographically secure random number
   generator.
-- **R2.** A password `Generate` returns or writes meets the options it was generated with: its length is within
-  `MinLength` and `MaxLength`, it holds at least the minimum count of lowercase, uppercase, numeric and special
-  characters, and no character repeats more than `MaxConsecutiveIdenticalCharacters` times in a row.
+- **R2.** A password `Generate` or `GeneratePinned` returns or writes meets the options it was generated with: its
+  length is within `MinLength` and `MaxLength`, it holds at least the minimum count of lowercase, uppercase, numeric
+  and special characters, and no character repeats more than `MaxConsecutiveIdenticalCharacters` times in a row.
 - **R3.** When the options can't be met, because the buffer's length is outside the length range, the minimum counts
   add up to zero or to more than the length, or no attempt within `MaxAttempts` passes `IsValid`, `Generate` throws
   `InvalidOperationException` instead of returning a weaker password.
@@ -25,7 +25,10 @@ Users must not rely on the library for these:
   ask for 16 to 64 characters with at least one of each character class, but options such as `SetLengthRange(4, 4)`
   produce four-character passwords.
 - **Clearing memory.** A password returned as a `string` stays in memory until the garbage collector reclaims it. To
-  clear a password after use, generate it into a `Span<char>` the application owns and clear that.
+  clear a password after use, call `GeneratePinned`, which returns it in a pinned buffer that the garbage collector
+  never copies and that is zeroed when disposed
+  ([ADR-1001](decisions/1001-pinned-password-buffers-are-default-interface-members.md)), or generate it into a
+  `Span<char>` the application owns and clear that. Copies the application makes, such as a `string`, aren't cleared.
 - **A length of zero.** When `MinLength` is 0, a `Generate` overload that returns a `string` can draw a length of 0,
   and `string.Create` then returns an empty string without calling the generator, so nothing validates it. Keep
   `MinLength` at 1 or more.
@@ -59,9 +62,9 @@ privilege and open design."
 - **Fail-safe defaults.** The default options ask for 16 to 64 characters with at least one lowercase, uppercase,
   numeric and special character, and a password that fails its options is never returned (R2, R3), except the empty
   string a length of 0 yields (see A length of zero above).
-- **Complete mediation.** Every `Generate` overload ends in `Generate(PasswordGeneratorOptions, Span<char>)`, which
-  checks the length and the minimum counts and validates each attempt before it returns. The one gap is a `string`
-  overload that draws a length of 0 (see A length of zero above).
+- **Complete mediation.** Every `Generate` and `GeneratePinned` overload ends in
+  `Generate(PasswordGeneratorOptions, Span<char>)`, which checks the length and the minimum counts and validates each
+  attempt before it returns. The one gap is a `string` overload that draws a length of 0 (see A length of zero above).
 - **Least privilege.** The library opens no file, network connection or configuration source and needs no permission;
   the application passes it the options.
 - **Open design.** The strength rests on the random number generator, not on a secret algorithm: the source is public
@@ -81,9 +84,10 @@ privilege and open design."
 [//]: # "Maintainers: add the tests and the coverage the project keeps."
 
 - **Tests:** `tests/NCode.PasswordGenerator.Tests` (xUnit) checks the options' length rules, character set and
-  `IsValid` (`PasswordGeneratorOptionsTests`), and that `Generate` meets the options, throws when they can't be met or
-  `MaxAttempts` runs out, and enumerates `MaxEnumerations` passwords (`PasswordGeneratorTests`). Coverage isn't
-  measured.
+  `IsValid` (`PasswordGeneratorOptionsTests`), that `Generate` and `GeneratePinned` meet the options and throw when
+  they can't be met or `MaxAttempts` runs out, that enumerating yields `MaxEnumerations` passwords
+  (`PasswordGeneratorTests`), and that a pinned buffer is zeroed when disposed (`PinnedPasswordBufferTests`).
+  Coverage isn't measured.
 - **Gate:** `./build/dod.ps1` builds in Release with warnings as errors
   ([ADR-0100](decisions/project-template/0100-warnings-are-errors-in-every-project.md)), runs the analyzers and the
   banned-API list in `build/BannedSymbols.txt`

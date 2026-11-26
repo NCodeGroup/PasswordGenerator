@@ -46,6 +46,13 @@ void UsageWithSpan(IPasswordGenerator generator)
     generator.Generate(password);
 }
 
+void UsageWithPinnedBuffer(IPasswordGenerator generator)
+{
+    // pinned so the GC never copies it, and zeroed when disposed
+    using var password = generator.GeneratePinned();
+    var span = password.Memory.Span;
+}
+
 void UsageWithCustomOptions(IPasswordGenerator generator)
 {
     var options = new PasswordGeneratorOptions

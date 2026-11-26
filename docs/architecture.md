@@ -23,7 +23,7 @@ flowchart LR
 
 | Component | Role |
 | --- | --- |
-| `IPasswordGenerator` | What applications call: `Generate` overloads that return a `string` or fill the caller's `Span<char>`, with the default options, options passed in, or a callback that adjusts a copy of the defaults. Enumerating it yields `MaxEnumerations` passwords. |
+| `IPasswordGenerator` | What applications call: `Generate` overloads that return a `string` or fill the caller's `Span<char>`, and `GeneratePinned` overloads that return a pinned buffer zeroed when disposed ([ADR-1001](decisions/1001-pinned-password-buffers-are-default-interface-members.md)), with the default options, options passed in, or a callback that adjusts a copy of the defaults. Enumerating it yields `MaxEnumerations` passwords. |
 | `PasswordGenerator` | The implementation, and `PasswordGenerator.Default`, a shared instance with the default options. It places each character class's minimum count, fills the rest from the allowed character set, shuffles the result, and repeats until `PasswordGeneratorOptions.IsValid` accepts it or `MaxAttempts` runs out. |
 | `PasswordGeneratorOptions` | The rules: the length range, the minimum count of lowercase, uppercase, numeric and special characters, the special characters, the longest run of identical characters, `MaxAttempts` and `MaxEnumerations`. `IsValid` checks a password against them. |
 | `ServiceCollectionExtensions` | `AddPasswordGenerator`, which registers `PasswordGenerator` as the singleton `IPasswordGenerator` and configures its options through `Microsoft.Extensions.Options`. |

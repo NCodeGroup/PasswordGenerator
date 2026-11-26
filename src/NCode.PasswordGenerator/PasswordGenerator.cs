@@ -229,10 +229,17 @@ public class PasswordGenerator : IPasswordGenerator
             RandomNumberGenerator.Shuffle(dst);
         });
 
-    internal int GetLength(PasswordGeneratorOptions options) =>
-        options.MinLength == options.MaxLength
+    internal int GetLength(PasswordGeneratorOptions options)
+    {
+        var length = options.MinLength == options.MaxLength
             ? options.MinLength
             : GetRandomInt32(options.MinLength, options.MaxLength + 1);
+
+        if (length <= 0)
+            throw new InvalidOperationException("The requested password length is too small.");
+
+        return length;
+    }
 
     // for unit tests
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

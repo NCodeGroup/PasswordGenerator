@@ -14,5 +14,6 @@ The format is based on [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.
 
 - `AssemblyVersion` now moves only with the major version (`1.0.0.0` for every 1.x release), so a minor or patch upgrade is a drop-in replacement; `FileVersion` and `InformationalVersion` keep the exact version. Releases up to 1.0.1 had an `AssemblyVersion` equal to the package version.
 - Updated the project to project-template v0.61.2: stricter analyzers and banned APIs, a Definition of Done build script, and CI that runs it.
+- Moved the library project to `src/NCode.PasswordGenerator/` and the test project to `tests/NCode.PasswordGenerator.Tests/`, the layout the project template uses; the package and its public API are unchanged.
 
 [Unreleased]: https://github.com/NCodeGroup/PasswordGenerator/compare/v1.0.1...HEAD

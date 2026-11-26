@@ -36,7 +36,8 @@ public class PinnedPasswordBufferTests
         var buffer = new PinnedPasswordBuffer(12);
         buffer.Memory.Span.Fill('x');
 
-        Assert.True(MemoryMarshal.TryGetArray<char>(buffer.Memory, out var segment));
+        var found = MemoryMarshal.TryGetArray<char>(buffer.Memory, out var segment);
+        Assert.True(found);
         var array = segment.Array;
         Assert.NotNull(array);
 

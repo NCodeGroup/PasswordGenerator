@@ -345,7 +345,8 @@ public class PasswordGeneratorTests : BaseTests
     {
         using var password = PasswordGenerator.GeneratePinned();
 
-        Assert.True(DefaultOptions.IsValid(password.Memory.Span));
+        var isValid = DefaultOptions.IsValid(password.Memory.Span);
+        Assert.True(isValid);
     }
 
     [Fact]
@@ -364,7 +365,9 @@ public class PasswordGeneratorTests : BaseTests
         using var password = PasswordGenerator.GeneratePinned(DefaultOptions);
 
         Assert.InRange(password.Memory.Length, 16, 32);
-        Assert.True(DefaultOptions.IsValid(password.Memory.Span));
+
+        var isValid = DefaultOptions.IsValid(password.Memory.Span);
+        Assert.True(isValid);
     }
 
     [Fact]

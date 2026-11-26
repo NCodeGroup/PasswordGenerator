@@ -46,7 +46,7 @@ A pull request is acceptable once CI passes, every discussion on it has been fix
 
 ## Commit Attribution
 
-Commits record the people who wrote them. Never add a `Co-authored-by:` trailer naming an AI agent (Copilot, Claude or any other), a `Claude-Session:` trailer or a "Generated with" line; say which tools helped in the pull request instead. The `commit-msg` hook strips them, and the `Commit attribution` check fails a pull request with a commit authored, committed or co-authored by an AI agent. To fix one, run the command the check prints, then `git push --force-with-lease`: `git rebase <base> --exec "git commit --amend --no-edit --reset-author"` re-authors a commit by an AI agent account, and `git rebase <base> --exec "git -c core.hooksPath=.githooks commit --amend --no-edit"` runs the `commit-msg` hook on each commit message, which strips the attribution lines `--no-edit` alone keeps. The check also reads the pull request's title and description, which a squash merge can copy into the default branch: when it finds such a line there, edit the pull request. [The decision](docs/decisions/project-template/0002-commits-are-attributed-to-people-not-agents.md) says why.
+Commits record the people who wrote them, so avoid AI agent attribution: don't add a `Co-authored-by:` trailer naming an AI agent (Copilot, Claude or any other), a `Claude-Session:` trailer or a "Generated with" line; say which tools helped in the pull request instead. Nothing checks for it or blocks a commit, push or pull request that has it, so one a tool adds anyway needs no fix. [The decision](docs/decisions/project-template/0018-agent-attribution-is-avoided-not-enforced.md) says why.
 
 ## .NET
 
@@ -58,6 +58,8 @@ Commits record the people who wrote them. Never add a `Co-authored-by:` trailer 
 ## Conventions
 
 [AGENTS.md](AGENTS.md) is the index of the conventions: the instruction files it lists, such as `.github/instructions/csharp.instructions.md` for C#, and the decisions in `docs/decisions/`. Read the ones your change touches. It also says which files the project template owns: template updates replace them, so never edit them.
+
+A reformat or a large move brings back the CodeQL alerts dismissed on the code it moves, since a dismissal follows the alert's location, not the code: dismiss each again, with its reason. When that reason isn't obvious from the code, put it in a comment beside the code, so the next dismissal takes a minute.
 
 ## AI-Assisted Work
 

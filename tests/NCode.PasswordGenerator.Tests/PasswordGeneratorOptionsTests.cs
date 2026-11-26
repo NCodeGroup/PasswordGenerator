@@ -90,6 +90,25 @@ public class PasswordGeneratorOptionsTests : BaseTests
     }
 
     [Fact]
+    public void IsValid_WhenSpecialCharactersChangedAfterUse_ThenUsesNewSpecialCharacters()
+    {
+        var options = new PasswordGeneratorOptions
+        {
+            MinNumericCharacters = 0,
+            MinUppercaseCharacters = 0,
+            SpecialCharacters = "!",
+        };
+
+        options.SetLengthRange(1, 64);
+
+        Assert.True(options.IsValid("ab!"));
+
+        options.SpecialCharacters = "?";
+
+        Assert.False(options.IsValid("ab!"));
+    }
+
+    [Fact]
     public void SetLengthRange_GivenInvalid_ThenThrows()
     {
         var options = new PasswordGeneratorOptions();

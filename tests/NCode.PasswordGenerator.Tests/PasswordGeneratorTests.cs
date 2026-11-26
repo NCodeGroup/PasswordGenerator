@@ -204,6 +204,21 @@ public class PasswordGeneratorTests : BaseTests
     }
 
     [Fact]
+    public void Generate_GivenEmptySpecialCharactersAndMinSpecial_ThenThrowsArgumentException()
+    {
+        var options = new PasswordGeneratorOptions
+        {
+            MinSpecialCharacters = 1,
+            SpecialCharacters = string.Empty,
+        };
+
+        var exception = Assert.Throws<ArgumentException>(() =>
+            PasswordGenerator.Generate(options));
+
+        Assert.Equal("choices", exception.ParamName);
+    }
+
+    [Fact]
     public void Generate_GivenNegativeMinimumAndUnreachableMinimum_ThenTooManyAttempts()
     {
         var options = new PasswordGeneratorOptions

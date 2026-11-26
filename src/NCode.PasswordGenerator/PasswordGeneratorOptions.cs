@@ -268,20 +268,24 @@ public class PasswordGeneratorOptions
         return this;
     }
 
-    private string? SpecialOrNull
+    private string? SpecialOrNull { get; set; }
+
+    private SpecialCharacterSearch? SpecialSearchOrNull { get; set; }
+
+    private SearchValues<char> SpecialSearchValues
     {
-        get;
-        set
+        get
         {
-            field = value;
-            SpecialSearchValuesOrNull = null;
+            var special = SpecialCharacters;
+            var search = SpecialSearchOrNull;
+            if (search is not null && ReferenceEquals(search.Characters, special))
+                return search.Values;
+
+            var values = SearchValues.Create(special);
+            SpecialSearchOrNull = new SpecialCharacterSearch(special, values);
+            return values;
         }
     }
-
-    private SearchValues<char>? SpecialSearchValuesOrNull { get; set; }
-
-    private SearchValues<char> SpecialSearchValues =>
-        SpecialSearchValuesOrNull ??= SearchValues.Create(SpecialCharacters);
 
     /// <summary>
     /// Gets or sets the list of special characters such as punctuations and symbols that are to be included in the generated password.
@@ -386,4 +390,6 @@ public class PasswordGeneratorOptions
                countLowercase >= MinLowercaseCharacters &&
                countUppercase >= MinUppercaseCharacters;
     }
+
+    private sealed record SpecialCharacterSearch(string Characters, SearchValues<char> Values);
 }

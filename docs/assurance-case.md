@@ -14,10 +14,10 @@ the user-facing summary.
 - **R2.** A password `Generate` or `GeneratePinned` returns or writes meets the options it was generated with: its
   length is within `MinLength` and `MaxLength`, it holds at least the minimum count of lowercase, uppercase, numeric
   and special characters, and no character repeats more than `MaxConsecutiveIdenticalCharacters` times in a row.
-- **R3.** When the options can't be met, because the buffer's length is outside the length range, the minimum counts
-  add up to zero or to more than the length, or no attempt within `MaxAttempts` passes `IsValid`, `Generate` throws
-  `InvalidOperationException` instead of returning a weaker password. When no attempt passes, it first clears the
-  caller's buffer, so the last rejected attempt isn't left in it
+- **R3.** When the options can't be met, because the length drawn from the options is 0 or less, the buffer's length is
+  outside the length range, the minimum counts add up to zero or to more than the length, or no attempt within
+  `MaxAttempts` passes `IsValid`, `Generate` and `GeneratePinned` throw `InvalidOperationException` instead of returning
+  a weaker password. When no attempt passes, they first clear the buffer, so the last rejected attempt isn't left in it
   ([ADR-0112](decisions/project-template/0112-binary-data-uses-spans-pooled-buffers-and-cleared-secrets.md)).
 - **R4.** The library keeps no copy of a password it generates, and logs, stores and sends nothing.
 
@@ -31,9 +31,6 @@ Users must not rely on the library for these:
   never copies and that is zeroed when disposed
   ([ADR-1001](decisions/1001-pinned-password-buffers-are-default-interface-members.md)), or generate it into a
   `Span<char>` the application owns and clear that. Copies the application makes, such as a `string`, aren't cleared.
-- **A length of zero.** When `MinLength` is 0, a `Generate` overload that returns a `string` can draw a length of 0,
-  and `string.Create` then returns an empty string without calling the generator, so nothing validates it. Keep
-  `MinLength` at 1 or more.
 
 ## Threat Model
 
@@ -48,8 +45,8 @@ How the application stores, sends or shows a password is outside the boundary.
 | Passwords are predictable because they come from a seeded or non-cryptographic generator | Yes | R1 |
 | The required characters sit at predictable positions, because each class's minimum count is placed first | Yes | R1: `RandomNumberGenerator.Shuffle`, a Fisher–Yates shuffle of the whole password |
 | Some characters are likelier than others because a random number is reduced with a modulo | Yes | R1: `RandomNumberGenerator.GetItems` picks each character and `RandomNumberGenerator.GetInt32` the length, each an unbiased value within its range |
-| A password weaker than the options ask for is returned | Yes | R2: `PasswordGeneratorOptions.IsValid` checks each password before it is returned, except a length of 0; see A length of zero above |
-| Options that can't be met yield a shorter or weaker password instead of an error | Yes | R3, except a length of 0; see A length of zero above |
+| A password weaker than the options ask for is returned | Yes | R2: `PasswordGeneratorOptions.IsValid` checks each password before it is returned |
+| Options that can't be met yield a shorter or weaker password instead of an error | Yes | R3 |
 | The application chooses weak options | No | The application owns its options; see Strength of the options above |
 | A password is read from the process's memory or a crash dump | No | The application owns its process; see Clearing memory above |
 | A tampered package or dependency reaches users | Yes | The dependency and release integrity controls under Evidence |
@@ -62,11 +59,10 @@ privilege and open design."
 - **Economy of mechanism.** Four public types, two direct package dependencies and one source of randomness
   ([architecture.md](architecture.md#components)).
 - **Fail-safe defaults.** The default options ask for 16 to 64 characters with at least one lowercase, uppercase,
-  numeric and special character, and a password that fails its options is never returned (R2, R3), except the empty
-  string a length of 0 yields (see A length of zero above).
+  numeric and special character, and a password that fails its options is never returned (R2, R3).
 - **Complete mediation.** Every `Generate` and `GeneratePinned` overload ends in
   `Generate(PasswordGeneratorOptions, Span<char>)`, which checks the length and the minimum counts and validates each
-  attempt before it returns. The one gap is a `string` overload that draws a length of 0 (see A length of zero above).
+  attempt before it returns. The `string` and `GeneratePinned` overloads first reject a drawn length of 0 or less.
 - **Least privilege.** The library opens no file, network connection or configuration source and needs no permission;
   the application passes it the options.
 - **Open design.** The strength rests on the random number generator, not on a secret algorithm: the source is public

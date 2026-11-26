@@ -43,7 +43,7 @@ How the application stores, sends or shows a password is outside the boundary.
 | Passwords are predictable because they come from a seeded or non-cryptographic generator | Yes | R1 |
 | The required characters sit at predictable positions, because each class's minimum count is placed first | Yes | R1: a Fisher–Yates shuffle of the whole password, drawn from `RandomNumberGenerator` |
 | Some characters are likelier than others because a random number is reduced with a modulo | Yes | R1: `RandomNumberGenerator.GetInt32` draws an unbiased value within its range |
-| A password weaker than the options ask for is returned | Yes | R2: `PasswordGeneratorOptions.IsValid` checks each password before it is returned |
+| A password weaker than the options ask for is returned | Yes | R2: `PasswordGeneratorOptions.IsValid` checks each password before it is returned, except a length of 0; see A length of zero above |
 | Options that can't be met yield a shorter or weaker password instead of an error | Yes | R3, except a length of 0; see A length of zero above |
 | The application chooses weak options | No | The application owns its options; see Strength of the options above |
 | A password is read from the process's memory or a crash dump | No | The application owns its process; see Clearing memory above |
@@ -57,7 +57,8 @@ privilege and open design."
 - **Economy of mechanism.** Four public types, two direct package dependencies and one source of randomness
   ([architecture.md](architecture.md#components)).
 - **Fail-safe defaults.** The default options ask for 16 to 64 characters with at least one lowercase, uppercase,
-  numeric and special character, and a password that fails its options is never returned (R2, R3).
+  numeric and special character, and a password that fails its options is never returned (R2, R3), except the empty
+  string a length of 0 yields (see A length of zero above).
 - **Complete mediation.** Every `Generate` overload ends in `Generate(PasswordGeneratorOptions, Span<char>)`, which
   checks the length and the minimum counts and validates each attempt before it returns. The one gap is a `string`
   overload that draws a length of 0 (see A length of zero above).

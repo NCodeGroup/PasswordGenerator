@@ -19,6 +19,9 @@ namespace NCode.PasswordGenerator;
 /// </remarks>
 public interface IPasswordGenerator : IEnumerable<string>
 {
+    /// <summary>
+    /// The message of the <see cref="NotSupportedException"/> that the default <c>GeneratePinned</c> members throw.
+    /// </summary>
     private const string PinnedNotSupportedMessage =
         "This IPasswordGenerator implementation doesn't generate passwords into pinned buffers.";
 
@@ -103,6 +106,11 @@ public interface IPasswordGenerator : IEnumerable<string>
 /// </summary>
 public class PasswordGenerator : IPasswordGenerator
 {
+    /// <summary>
+    /// The message of the <see cref="InvalidOperationException"/> thrown when the requested password length is too small.
+    /// </summary>
+    private const string LengthTooSmallMessage = "The requested password length is too small.";
+
     /// <summary>
     /// Gets a singleton instance for <see cref="IPasswordGenerator"/> that uses the default options.
     /// </summary>
@@ -192,7 +200,7 @@ public class PasswordGenerator : IPasswordGenerator
     public void Generate(PasswordGeneratorOptions options, Span<char> password)
     {
         if (password.Length < options.MinLength)
-            throw new InvalidOperationException("The requested password length is too small.");
+            throw new InvalidOperationException(LengthTooSmallMessage);
 
         if (password.Length > options.MaxLength)
             throw new InvalidOperationException("The requested password length is too large.");
@@ -229,6 +237,13 @@ public class PasswordGenerator : IPasswordGenerator
             RandomNumberGenerator.Shuffle(dst);
         });
 
+    /// <summary>
+    /// Picks the length of the next password: the minimum length when the minimum and maximum lengths are equal,
+    /// and otherwise a random length from the minimum to the maximum, both included.
+    /// </summary>
+    /// <param name="options">The <see cref="PasswordGeneratorOptions"/> that set the length range.</param>
+    /// <returns>The length to generate.</returns>
+    /// <exception cref="InvalidOperationException">The chosen length is zero or less.</exception>
     internal int GetLength(PasswordGeneratorOptions options)
     {
         var length = options.MinLength == options.MaxLength
@@ -236,11 +251,16 @@ public class PasswordGenerator : IPasswordGenerator
             : GetRandomInt32(options.MinLength, options.MaxLength + 1);
 
         if (length <= 0)
-            throw new InvalidOperationException("The requested password length is too small.");
+            throw new InvalidOperationException(LengthTooSmallMessage);
 
         return length;
     }
 
+    /// <summary>
+    /// Creates the buffer that a pinned password is generated into.
+    /// </summary>
+    /// <param name="length">The number of characters the buffer holds.</param>
+    /// <returns>A new buffer that the caller disposes.</returns>
     internal virtual PinnedPasswordBuffer CreatePinnedBuffer(int length) =>
         new(length);
 

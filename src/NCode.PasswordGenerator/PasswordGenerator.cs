@@ -19,6 +19,9 @@ namespace NCode.PasswordGenerator;
 /// </remarks>
 public interface IPasswordGenerator : IEnumerable<string>
 {
+    private const string PinnedNotSupportedMessage =
+        "This IPasswordGenerator implementation doesn't generate passwords into pinned buffers.";
+
     /// <summary>
     /// Generates a random password using the default options.
     /// </summary>
@@ -93,9 +96,6 @@ public interface IPasswordGenerator : IEnumerable<string>
     /// <exception cref="NotSupportedException">The implementation doesn't override this member.</exception>
     IMemoryOwner<char> GeneratePinned(PasswordGeneratorOptions options) =>
         throw new NotSupportedException(PinnedNotSupportedMessage);
-
-    private const string PinnedNotSupportedMessage =
-        "This IPasswordGenerator implementation doesn't generate passwords into pinned buffers.";
 }
 
 /// <summary>
@@ -284,13 +284,17 @@ public class PasswordGenerator : IPasswordGenerator
         GeneratePinned(DefaultOptions);
 
     /// <inheritdoc />
-    public IMemoryOwner<char> GeneratePinned(Action<PasswordGeneratorOptions> optionsConfigurator) =>
-        GeneratePinned(Configure(optionsConfigurator));
+    public IMemoryOwner<char> GeneratePinned(Action<PasswordGeneratorOptions> optionsConfigurator)
+    {
+        var options = Configure(optionsConfigurator);
+        return GeneratePinned(options);
+    }
 
     /// <inheritdoc />
     public IMemoryOwner<char> GeneratePinned(PasswordGeneratorOptions options)
     {
-        var buffer = new PinnedPasswordBuffer(GetLength(options));
+        var length = GetLength(options);
+        var buffer = new PinnedPasswordBuffer(length);
         try
         {
             Generate(options, buffer.Memory.Span);

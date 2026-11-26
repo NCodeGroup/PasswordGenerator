@@ -40,7 +40,11 @@ internal sealed class PinnedPasswordBuffer : IMemoryOwner<char>
     public void Dispose()
     {
         var buffer = Interlocked.Exchange(ref _buffer, null);
-        if (buffer is not null)
-            CryptographicOperations.ZeroMemory(MemoryMarshal.AsBytes(buffer.AsSpan()));
+        if (buffer is null)
+            return;
+
+        var chars = buffer.AsSpan();
+        var bytes = MemoryMarshal.AsBytes(chars);
+        CryptographicOperations.ZeroMemory(bytes);
     }
 }

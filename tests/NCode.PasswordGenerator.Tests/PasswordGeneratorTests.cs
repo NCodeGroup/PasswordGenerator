@@ -227,6 +227,26 @@ public class PasswordGeneratorTests : BaseTests
     }
 
     [Fact]
+    public void Generate_GivenSpan_WhenTooManyAttempts_ThenCleared()
+    {
+        DefaultOptions.MaxAttempts = 3;
+        DefaultOptions.SetExactLength(8);
+
+        bool? isValidResult = false;
+        MockPasswordGenerator
+            .Setup(_ => _.SkipIsValid(out isValidResult))
+            .Returns(true)
+            .Verifiable();
+
+        var password = new char[8];
+        var exception = Assert.Throws<InvalidOperationException>(() =>
+            PasswordGenerator.Generate(DefaultOptions, password));
+
+        Assert.Equal("Too many attempts.", exception.Message);
+        Assert.All(password, c => Assert.Equal('\0', c));
+    }
+
+    [Fact]
     public void GetLength_GivenEqualMinMax_ThenSame()
     {
         const int length = 7;

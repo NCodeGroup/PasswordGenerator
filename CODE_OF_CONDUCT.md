@@ -46,9 +46,10 @@ offline event.
 
 ## Enforcement
 
-Instances of abusive, harassing, or otherwise unacceptable behavior may be reported to the community leaders
-responsible for enforcement, the maintainers [GOVERNANCE.md](GOVERNANCE.md) lists, privately: on the repository's **Security** tab, choose **Report a vulnerability** and start the title with
-"Conduct:". The report reaches the maintainers only. All complaints will be reviewed and investigated promptly and fairly.
+Instances of abusive, harassing, or otherwise unacceptable behavior may be reported to the community leaders responsible
+for enforcement, the maintainers [GOVERNANCE.md](GOVERNANCE.md) lists, privately: on the repository's **Security** tab,
+choose **Report a vulnerability** and start the title with "Conduct:". The report reaches the maintainers only. All
+complaints will be reviewed and investigated promptly and fairly.
 
 All community leaders are obligated to respect the privacy and security of the reporter of any incident.
 
@@ -97,8 +98,9 @@ This Code of Conduct is adapted from the [Contributor Covenant][homepage], versi
 
 Community Impact Guidelines were inspired by [Mozilla's code of conduct enforcement ladder][Mozilla CoC].
 
-For answers to common questions about this code of conduct, see the FAQ at [https://www.contributor-covenant.org/faq][FAQ].
-Translations are available at [https://www.contributor-covenant.org/translations][translations].
+For answers to common questions about this code of conduct, see the FAQ at
+[https://www.contributor-covenant.org/faq][FAQ]. Translations are available at
+[https://www.contributor-covenant.org/translations][translations].
 
 [homepage]: https://www.contributor-covenant.org
 [v2.1]: https://www.contributor-covenant.org/version/2/1/code_of_conduct.html

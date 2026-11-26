@@ -1,7 +1,7 @@
 # Governance
 
-NCode.PasswordGenerator belongs to NCode Group, under `Apache-2.0`. This page says who does
-what and how decisions are made.
+NCode.PasswordGenerator belongs to NCode Group, under `Apache-2.0`. This page says who does what and how decisions are
+made.
 
 ## Roles
 
@@ -26,22 +26,22 @@ a maintainer; the existing maintainers decide, and the change is recorded in thi
 
 ## Releases
 
-Versions follow Semantic Versioning. Releases are tagged when `AGENTS.md`'s Landing section sets `release: tag`, and published too with
-`tag+release`, as
+Versions follow Semantic Versioning. Releases are tagged when `AGENTS.md`'s Landing section sets `release: tag`, and
+published too with `tag+release`, as
 [ADR-0016](docs/decisions/project-template/0016-releases-are-tagged-and-published-when-their-pull-request-merges.md)
-records. The project's own workflow, `.github/workflows/main.yml`, publishes the packages to nuget.org. [SECURITY.md](SECURITY.md) says how to verify a package.
+records. The project's own workflow, `.github/workflows/main.yml`, publishes the packages to nuget.org.
+[SECURITY.md](SECURITY.md) says how to verify a package.
 
 ## Continuity
 
-The repository, its issues, decision records, build, release automation and documentation are all in the
-GitHub organization that owns it, so anyone given access can carry
-on with no knowledge held elsewhere. nuget.org publishing runs in `.github/workflows/main.yml`: hand over whatever credential it uses with the repository.
+The repository, its issues, decision records, build, release automation and documentation are all in the GitHub
+organization that owns it, so anyone given access can carry on with no knowledge held elsewhere. nuget.org publishing
+runs in `.github/workflows/main.yml`: hand over whatever credential it uses with the repository.
 
 [//]: # "Maintainers: name the owners, and keep the list current."
 
-Owners today: the repository's owners and the owners of the nuget.org packages. Continuity
-needs at least two people who can administer both; until there are
-two, it is incomplete, and the OpenSSF Best Practices silver level can't be claimed
+Owners today: the repository's owners and the owners of the nuget.org packages. Continuity needs at least two people who
+can administer both; until there are two, it is incomplete, and the OpenSSF Best Practices silver level can't be claimed
 ([docs/best-practices-badge.md](docs/best-practices-badge.md)).
 
 ## Changing This Document

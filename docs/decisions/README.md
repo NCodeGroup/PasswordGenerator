@@ -62,4 +62,4 @@ override in `AGENTS.md`.
 
 | ADR | Decision | Status |
 | --- | --- | --- |
-| [1000](1000-the-library-targets-net10-only.md) | The library targets .NET 10 only; consumers on older runtimes stay on 1.x | Accepted |
+| [1000](1000-the-library-targets-the-newest-dotnet-lts-release.md) | The library targets the newest .NET LTS release only; consumers on older runtimes stay on the previous major version | Accepted |

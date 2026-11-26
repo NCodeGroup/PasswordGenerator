@@ -23,7 +23,7 @@ The format is based on [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.
 
 ### Removed
 
-- **Breaking:** Support for .NET Standard 2.1. The package targets .NET 10 (`net10.0`) only and is released as 2.0.0; apps on .NET 6–9, Unity, Mono or Xamarin stay on the 1.x packages. The public API is unchanged, so a .NET 10 app upgrades without code changes. ([#24](https://github.com/NCodeGroup/PasswordGenerator/issues/24), [ADR-1000](docs/decisions/1000-the-library-targets-net10-only.md))
+- **Breaking:** Support for .NET Standard 2.1. The package targets .NET 10 (`net10.0`) only and is released as 2.0.0; apps on .NET 6–9, Unity, Mono or Xamarin stay on the 1.x packages. The public API is unchanged, so a .NET 10 app upgrades without code changes. ([#24](https://github.com/NCodeGroup/PasswordGenerator/issues/24), [ADR-1000](docs/decisions/1000-the-library-targets-the-newest-dotnet-lts-release.md))
 
 ### Fixed
 

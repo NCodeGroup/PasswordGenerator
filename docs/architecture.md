@@ -8,9 +8,9 @@ requirements.
 
 ## Components
 
-NCode.PasswordGenerator is one library, `src/NCode.PasswordGenerator`, which targets `netstandard2.1`; its only direct
-package dependencies are `Microsoft.Extensions.DependencyInjection.Abstractions` and `Microsoft.Extensions.Options`.
-Moving it to `net10.0` is tracked in [#24](https://github.com/NCodeGroup/PasswordGenerator/issues/24).
+NCode.PasswordGenerator is one library, `src/NCode.PasswordGenerator`, which targets `net10.0`
+([ADR-1000](decisions/1000-the-library-targets-net10-only.md)); its only direct package dependencies are
+`Microsoft.Extensions.DependencyInjection.Abstractions` and `Microsoft.Extensions.Options`.
 
 ```mermaid
 flowchart LR

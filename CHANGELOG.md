@@ -29,4 +29,18 @@ The format is based on [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.
 
 - The NuGet package has its description and tags, which were set in a file the build never read. ([#22](https://github.com/NCodeGroup/PasswordGenerator/issues/22))
 
+## [1.0.1] - 2023-07-16
+
+### Changed
+
+- The README's first heading is "Overview" instead of "PasswordGenerator".
+
+## [1.0.0] - 2023-07-16
+
+### Added
+
+- Initial release: `IPasswordGenerator`, its implementation `PasswordGenerator`, `PasswordGeneratorOptions` and the `AddPasswordGenerator` registration, for .NET Standard 2.1.
+
 [Unreleased]: https://github.com/NCodeGroup/PasswordGenerator/compare/v1.0.1...HEAD
+[1.0.1]: https://github.com/NCodeGroup/PasswordGenerator/compare/v1.0.0...v1.0.1
+[1.0.0]: https://github.com/NCodeGroup/PasswordGenerator/releases/tag/v1.0.0

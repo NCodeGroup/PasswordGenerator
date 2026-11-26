@@ -19,7 +19,7 @@ The format is based on [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.
 - Moved the library project to `src/NCode.PasswordGenerator/` and the test project to `tests/NCode.PasswordGenerator.Tests/`, the layout the project template uses; the package and its public API are unchanged.
 - Updated the project to project-template v0.114.1: the version of every assembly and package comes from `version.json` through Nerdbank.GitVersioning, so a release's tag must name the version `version.json` holds, and the release workflow fails when it doesn't; NCode Review approves a clean pull request, and pull requests open as drafts; the project gains a code of conduct, governance, roadmap, architecture and assurance case documents.
 - Passwords are filled and shuffled with `RandomNumberGenerator.GetItems` and `RandomNumberGenerator.Shuffle`, and `PasswordGeneratorOptions.IsValid` looks up special characters with `SearchValues<char>`; the rules a generated password meets are unchanged. ([#24](https://github.com/NCodeGroup/PasswordGenerator/issues/24))
-- Generating a password with `MinSpecialCharacters` above zero and an empty `SpecialCharacters` throws `ArgumentException` instead of its subclass `ArgumentOutOfRangeException`. ([#24](https://github.com/NCodeGroup/PasswordGenerator/issues/24))
+- **Breaking:** Generating a password with `MinSpecialCharacters` above zero and an empty `SpecialCharacters` throws `ArgumentException` instead of its subclass `ArgumentOutOfRangeException`; code that catches `ArgumentOutOfRangeException` for this case must catch `ArgumentException` instead. ([#24](https://github.com/NCodeGroup/PasswordGenerator/issues/24))
 
 ### Removed
 

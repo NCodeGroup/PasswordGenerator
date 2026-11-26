@@ -113,10 +113,6 @@ public class PasswordGenerator : IPasswordGenerator
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal virtual int GetRandomInt32(int toExclusive) =>
-        RandomNumberGenerator.GetInt32(toExclusive);
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal virtual int GetRandomInt32(int fromInclusive, int toExclusive) =>
         RandomNumberGenerator.GetInt32(fromInclusive, toExclusive);
 
@@ -220,45 +216,24 @@ public class PasswordGenerator : IPasswordGenerator
             return;
         }
 
-        var special = options.SpecialCharacters;
-        const string numeric = PasswordGeneratorOptions.NumericCharacters;
-        const string lowercase = PasswordGeneratorOptions.LowercaseCharacters;
-        const string uppercase = PasswordGeneratorOptions.UppercaseCharacters;
-
-        var remainingSpecial = options.MinSpecialCharacters;
-        var remainingNumeric = options.MinNumericCharacters;
-        var remainingLowercase = options.MinLowercaseCharacters;
-        var remainingUppercase = options.MinUppercaseCharacters;
-
-        for (var i = 0; i < password.Length; ++i)
-        {
-            if (remainingSpecial > 0)
-            {
-                password[i] = special[GetRandomInt32(special.Length)];
-                --remainingSpecial;
-            }
-            else if (remainingNumeric > 0)
-            {
-                password[i] = numeric[GetRandomInt32(numeric.Length)];
-                --remainingNumeric;
-            }
-            else if (remainingLowercase > 0)
-            {
-                password[i] = lowercase[GetRandomInt32(lowercase.Length)];
-                --remainingLowercase;
-            }
-            else if (remainingUppercase > 0)
-            {
-                password[i] = uppercase[GetRandomInt32(uppercase.Length)];
-                --remainingUppercase;
-            }
-            else
-            {
-                password[i] = characterSet[GetRandomInt32(characterSet.Length)];
-            }
-        }
+        var remaining = password;
+        remaining = FillRandom(options.SpecialCharacters, options.MinSpecialCharacters, remaining);
+        remaining = FillRandom(PasswordGeneratorOptions.NumericCharacters, options.MinNumericCharacters, remaining);
+        remaining = FillRandom(PasswordGeneratorOptions.LowercaseCharacters, options.MinLowercaseCharacters, remaining);
+        remaining = FillRandom(PasswordGeneratorOptions.UppercaseCharacters, options.MinUppercaseCharacters, remaining);
+        FillRandom(characterSet, remaining.Length, remaining);
 
         RandomNumberGenerator.Shuffle(password);
+    }
+
+    private static Span<char> FillRandom(ReadOnlySpan<char> choices, int count, Span<char> destination)
+    {
+        var take = Math.Min(count, destination.Length);
+        if (take <= 0)
+            return destination;
+
+        RandomNumberGenerator.GetItems(choices, destination[..take]);
+        return destination[take..];
     }
 
     /// <inheritdoc />

@@ -30,7 +30,6 @@ jobs:
       uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
       with:
         global-json-file: global.json
-        dotnet-version: 6.0.x
     - name: Extract version from tag
       uses: dhkatz/get-version-action@9166b8a614609209809cdef096d62b39287139cb # v3.0.0
       id: extract_version
@@ -67,7 +66,6 @@ jobs:
         uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
         with:
           global-json-file: global.json
-          dotnet-version: 6.0.x
       - name: Restore dependencies
         run: dotnet restore
       - name: Run rests
@@ -115,7 +113,6 @@ jobs:
         uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
         with:
           global-json-file: global.json
-          dotnet-version: 6.0.x
       - name: Publish NuGet package
         run: dotnet nuget push ./src/*/bin/${BUILD_CONFIGURATION}/*.nupkg --api-key "$NUGET_APIKEY" --source https://api.nuget.org/v3/index.json
         env:

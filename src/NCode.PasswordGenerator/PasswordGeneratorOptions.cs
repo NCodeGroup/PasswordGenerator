@@ -270,12 +270,20 @@ public class PasswordGeneratorOptions
 
     private string? SpecialOrNull { get; set; }
 
+    /// <summary>
+    /// Gets or sets the special-character search values last built, or <see langword="null"/> before the first use.
+    /// </summary>
     private SpecialCharacterSearch? SpecialSearchOrNull { get; set; }
 
+    /// <summary>
+    /// Gets the search values for the current <see cref="SpecialCharacters"/>, built again when that string differs
+    /// from the one the cached values were built from.
+    /// </summary>
     private SearchValues<char> SpecialSearchValues
     {
         get
         {
+            // Keyed by the source string rather than reset by the setter, so a read that races a write can't keep stale values.
             var special = SpecialCharacters;
             var search = SpecialSearchOrNull;
             if (search is not null && ReferenceEquals(search.Characters, special))
@@ -390,6 +398,4 @@ public class PasswordGeneratorOptions
                countLowercase >= MinLowercaseCharacters &&
                countUppercase >= MinUppercaseCharacters;
     }
-
-    private sealed record SpecialCharacterSearch(string Characters, SearchValues<char> Values);
 }

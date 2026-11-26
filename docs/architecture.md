@@ -33,7 +33,8 @@ flowchart LR
 
 - Decisions the design rests on are recorded in [decisions/](decisions/README.md).
 - Every random choice goes through `RandomNumberGenerator`, and a password is returned only after
-  `PasswordGeneratorOptions.IsValid` accepts it ([assurance-case.md](assurance-case.md#security-requirements)).
+  `PasswordGeneratorOptions.IsValid` accepts it, except the empty string a length of 0 yields
+  ([assurance-case.md](assurance-case.md#security-requirements)).
 - Warnings are errors ([ADR-0100](decisions/project-template/0100-warnings-are-errors-in-every-project.md)), and
   disallowed APIs are banned at build time
   ([ADR-0102](decisions/project-template/0102-disallowed-apis-are-banned-at-build-time.md)).

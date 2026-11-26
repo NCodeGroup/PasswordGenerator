@@ -26,6 +26,9 @@ Users must not rely on the library for these:
   produce four-character passwords.
 - **Clearing memory.** A password returned as a `string` stays in memory until the garbage collector reclaims it. To
   clear a password after use, generate it into a `Span<char>` the application owns and clear that.
+- **A length of zero.** When `MinLength` is 0, a `Generate` overload that returns a `string` can draw a length of 0,
+  and `string.Create` then returns an empty string without calling the generator, so nothing validates it. Keep
+  `MinLength` at 1 or more.
 
 ## Threat Model
 
@@ -41,7 +44,7 @@ How the application stores, sends or shows a password is outside the boundary.
 | The required characters sit at predictable positions, because each class's minimum count is placed first | Yes | R1: a Fisher–Yates shuffle of the whole password, drawn from `RandomNumberGenerator` |
 | Some characters are likelier than others because a random number is reduced with a modulo | Yes | R1: `RandomNumberGenerator.GetInt32` draws an unbiased value within its range |
 | A password weaker than the options ask for is returned | Yes | R2: `PasswordGeneratorOptions.IsValid` checks each password before it is returned |
-| Options that can't be met yield a shorter or weaker password instead of an error | Yes | R3 |
+| Options that can't be met yield a shorter or weaker password instead of an error | Yes | R3, except a length of 0; see A length of zero above |
 | The application chooses weak options | No | The application owns its options; see Strength of the options above |
 | A password is read from the process's memory or a crash dump | No | The application owns its process; see Clearing memory above |
 | A tampered package or dependency reaches users | Yes | The dependency and release integrity controls under Evidence |
@@ -56,7 +59,8 @@ privilege and open design."
 - **Fail-safe defaults.** The default options ask for 16 to 64 characters with at least one lowercase, uppercase,
   numeric and special character, and a password that fails its options is never returned (R2, R3).
 - **Complete mediation.** Every `Generate` overload ends in `Generate(PasswordGeneratorOptions, Span<char>)`, which
-  checks the length and the minimum counts and validates each attempt before it returns.
+  checks the length and the minimum counts and validates each attempt before it returns. The one gap is a `string`
+  overload that draws a length of 0 (see A length of zero above).
 - **Least privilege.** The library opens no file, network connection or configuration source and needs no permission;
   the application passes it the options.
 - **Open design.** The strength rests on the random number generator, not on a secret algorithm: the source is public

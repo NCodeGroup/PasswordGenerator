@@ -59,3 +59,6 @@ Not registered yet. With one maintainer, silver stops below 100%: `access_contin
 OpenSSF Scorecard runs on every push to `main` and once a week (`.github/workflows/scorecard.yml`), and each release
 carries provenance attestations and an SBOM (`.github/workflows/release-provenance.yml`, which `publish.yml` calls,
 [ADR-0151](decisions/project-template/0151-release-follow-ups-are-jobs-publish-calls.md)).
+
+CI runs `./.template/Test-FileHeaders.ps1`, which fails on a source file without the copyright line and the
+`SPDX-License-Identifier` line, so `copyright_per_file` and `license_per_file` (gold MUST) stay met.

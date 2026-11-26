@@ -11,19 +11,10 @@ namespace NCode.PasswordGenerator;
 /// Owns a password buffer on the pinned object heap, so the garbage collector never copies it, and zeroes the buffer
 /// when disposed.
 /// </summary>
-internal sealed class PinnedPasswordBuffer : IMemoryOwner<char>
+/// <param name="length">The number of characters the buffer holds.</param>
+internal sealed class PinnedPasswordBuffer(int length) : IMemoryOwner<char>
 {
-    private char[]? _buffer;
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="PinnedPasswordBuffer"/> class with a buffer of
-    /// <paramref name="length"/> characters.
-    /// </summary>
-    /// <param name="length">The number of characters the buffer holds.</param>
-    public PinnedPasswordBuffer(int length)
-    {
-        _buffer = GC.AllocateUninitializedArray<char>(length, pinned: true);
-    }
+    private char[]? _buffer = GC.AllocateUninitializedArray<char>(length, pinned: true);
 
     /// <inheritdoc />
     public Memory<char> Memory

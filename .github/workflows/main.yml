@@ -40,18 +40,16 @@ jobs:
     # The library doesn't pack on build (GeneratePackageOnBuild races with dotnet pack, NU5026), so pack what was built.
     - name: Pack
       run: dotnet pack --no-build --configuration ${BUILD_CONFIGURATION} -p:PublicRelease=${PUBLIC_RELEASE}
+    # Tests the release check below on every event, so a mistake in it shows before a release needs it.
+    - name: Test the release version check
+      shell: pwsh
+      run: ./build/Test-PackageVersion.SelfTest.ps1
     - name: Check every package has the tag's version
       if: github.event_name == 'release'
       shell: pwsh
       env:
         TAG: ${{ github.event.release.tag_name }}
-      run: |
-        if ($env:TAG -cnotmatch '^v([0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?)\z') { throw "The release tag '$env:TAG' isn't a version such as v1.2.3." }
-        $version = $Matches[1]
-        $packages = @(Get-ChildItem -Path "src/*/bin/$env:BUILD_CONFIGURATION/*.nupkg")
-        if (-not $packages) { throw 'The build produced no package.' }
-        $wrong = @($packages | Where-Object { -not $_.Name.EndsWith(".$version.nupkg", [StringComparison]::OrdinalIgnoreCase) })
-        if ($wrong) { throw "These packages don't have version $version, the tag's: $($wrong.Name -join ', '). Set version in version.json to $version." }
+      run: ./build/Test-PackageVersion.ps1 -Tag $env:TAG -Path "src/*/bin/$env:BUILD_CONFIGURATION/*.nupkg"
     - name: Upload artifacts
       uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
       with:

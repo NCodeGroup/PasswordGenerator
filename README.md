@@ -72,6 +72,7 @@ void UsageWithOptionsConfigurator(IPasswordGenerator generator)
 
 void UsageWithEnumerable(IPasswordGenerator generator)
 {
+    // enumerating yields MaxEnumerations passwords, 100 by default
     var passwords = generator.Take(5);
 }
 

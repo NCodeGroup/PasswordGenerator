@@ -14,7 +14,8 @@ namespace NCode.PasswordGenerator;
 /// Provides the ability to generate random passwords.
 /// </summary>
 /// <remarks>
-/// Be aware that the <see cref="IEnumerable{T}"/> implementation is an infinite sequence.
+/// Enumerating a generator yields a finite sequence: <see cref="PasswordGeneratorOptions.MaxEnumerations"/> passwords,
+/// 100 unless the default options set another number, each generated with the default options.
 /// </remarks>
 public interface IPasswordGenerator : IEnumerable<string>
 {

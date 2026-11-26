@@ -16,7 +16,9 @@ the user-facing summary.
   and special characters, and no character repeats more than `MaxConsecutiveIdenticalCharacters` times in a row.
 - **R3.** When the options can't be met, because the buffer's length is outside the length range, the minimum counts
   add up to zero or to more than the length, or no attempt within `MaxAttempts` passes `IsValid`, `Generate` throws
-  `InvalidOperationException` instead of returning a weaker password.
+  `InvalidOperationException` instead of returning a weaker password. When no attempt passes, it first clears the
+  caller's buffer, so the last rejected attempt isn't left in it
+  ([ADR-0112](decisions/project-template/0112-binary-data-uses-spans-pooled-buffers-and-cleared-secrets.md)).
 - **R4.** The library keeps no copy of a password it generates, and logs, stores and sends nothing.
 
 Users must not rely on the library for these:

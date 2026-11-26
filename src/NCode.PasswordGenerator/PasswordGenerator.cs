@@ -217,6 +217,7 @@ public class PasswordGenerator : IPasswordGenerator
             if (IsValid(options, password)) return;
         }
 
+        password.Clear();
         throw new InvalidOperationException("Too many attempts.");
     }
 

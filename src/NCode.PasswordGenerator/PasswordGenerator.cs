@@ -261,6 +261,9 @@ public class PasswordGenerator : IPasswordGenerator
     /// </summary>
     /// <param name="length">The number of characters the buffer holds.</param>
     /// <returns>A new buffer that the caller disposes.</returns>
+    /// <remarks>
+    /// Virtual so that unit tests can substitute a buffer they observe.
+    /// </remarks>
     internal virtual PinnedPasswordBuffer CreatePinnedBuffer(int length) =>
         new(length);
 

@@ -22,6 +22,9 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      # version.json sets the version (ADR-0138); a release builds and packs it without the -g<commit> suffix.
+      PUBLIC_RELEASE: ${{ github.event_name == 'release' }}
     steps:
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
@@ -34,14 +37,9 @@ jobs:
       run: dotnet restore
     - name: Build
       run: dotnet build --no-restore --configuration ${BUILD_CONFIGURATION} -p:PublicRelease=${PUBLIC_RELEASE}
-      env:
-        # version.json sets the version (ADR-0138); a release builds it without the -g<commit> suffix.
-        PUBLIC_RELEASE: ${{ github.event_name == 'release' }}
     # The library doesn't pack on build (GeneratePackageOnBuild races with dotnet pack, NU5026), so pack what was built.
     - name: Pack
       run: dotnet pack --no-build --configuration ${BUILD_CONFIGURATION} -p:PublicRelease=${PUBLIC_RELEASE}
-      env:
-        PUBLIC_RELEASE: ${{ github.event_name == 'release' }}
     - name: Check every package has the tag's version
       if: github.event_name == 'release'
       shell: pwsh

@@ -2,7 +2,7 @@
 [.NET Standard 2.1]: https://learn.microsoft.com/en-us/dotnet/standard/net-standard?tabs=net-standard-2-1
 [.NET 10]: https://learn.microsoft.com/dotnet/core/whats-new/dotnet-10/overview
 
-![ci](https://github.com/NCodeGroup/PasswordGenerator/actions/workflows/main.yml/badge.svg)
+![ci](https://github.com/NCodeGroup/PasswordGenerator/actions/workflows/ci.yml/badge.svg)
 
 # Overview
 This [DI] friendly library provides the ability to generate strong cryptographically random passwords that meet the OWASP requirements (length, lower case, upper case, numeric, and special characters).

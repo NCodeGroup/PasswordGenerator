@@ -37,6 +37,11 @@ jobs:
       env:
         # version.json sets the version (ADR-0138); a release builds it without the -g<commit> suffix.
         PUBLIC_RELEASE: ${{ github.event_name == 'release' }}
+    # The library doesn't pack on build (GeneratePackageOnBuild races with dotnet pack, NU5026), so pack what was built.
+    - name: Pack
+      run: dotnet pack --no-build --configuration ${BUILD_CONFIGURATION} -p:PublicRelease=${PUBLIC_RELEASE}
+      env:
+        PUBLIC_RELEASE: ${{ github.event_name == 'release' }}
     - name: Check every package has the tag's version
       if: github.event_name == 'release'
       shell: pwsh

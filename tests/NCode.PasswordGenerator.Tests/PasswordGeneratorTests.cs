@@ -1,6 +1,8 @@
 // Copyright © NCode Group
 // SPDX-License-Identifier: Apache-2.0
 
+using System.Collections;
+
 namespace NCode.PasswordGenerator.Tests;
 
 public class PasswordGeneratorTests : BaseTests
@@ -276,5 +278,65 @@ public class PasswordGeneratorTests : BaseTests
         DefaultOptions.MaxEnumerations = count;
         var passwords = PasswordGenerator.ToList();
         Assert.Equal(count, passwords.Count);
+    }
+
+    #region GeneratePinned Tests
+
+    [Fact]
+    public void GeneratePinned_Valid()
+    {
+        using var password = PasswordGenerator.GeneratePinned();
+
+        Assert.True(DefaultOptions.IsValid(password.Memory.Span));
+    }
+
+    [Fact]
+    public void GeneratePinned_GivenConfigurator_ThenConfiguredLength()
+    {
+        using var password = PasswordGenerator.GeneratePinned(options => options.SetExactLength(20));
+
+        Assert.Equal(20, password.Memory.Length);
+    }
+
+    [Fact]
+    public void GeneratePinned_GivenOptions_ThenValid()
+    {
+        DefaultOptions.SetLengthRange(16, 32);
+
+        using var password = PasswordGenerator.GeneratePinned(DefaultOptions);
+
+        Assert.InRange(password.Memory.Length, 16, 32);
+        Assert.True(DefaultOptions.IsValid(password.Memory.Span));
+    }
+
+    [Fact]
+    public void GeneratePinned_GivenImplementationWithoutOverride_ThenThrows()
+    {
+        IPasswordGenerator generator = new LegacyPasswordGenerator();
+
+        Assert.Throws<NotSupportedException>(() => generator.GeneratePinned());
+        Assert.Throws<NotSupportedException>(() => generator.GeneratePinned(_ => { }));
+        Assert.Throws<NotSupportedException>(() => generator.GeneratePinned(DefaultOptions));
+    }
+
+    #endregion
+
+    private sealed class LegacyPasswordGenerator : IPasswordGenerator
+    {
+        public string Generate() => throw new NotImplementedException();
+
+        public string Generate(Action<PasswordGeneratorOptions> optionsConfigurator) => throw new NotImplementedException();
+
+        public string Generate(PasswordGeneratorOptions options) => throw new NotImplementedException();
+
+        public void Generate(Span<char> password) => throw new NotImplementedException();
+
+        public void Generate(Action<PasswordGeneratorOptions> optionsConfigurator, Span<char> password) => throw new NotImplementedException();
+
+        public void Generate(PasswordGeneratorOptions options, Span<char> password) => throw new NotImplementedException();
+
+        public IEnumerator<string> GetEnumerator() => throw new NotImplementedException();
+
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 }

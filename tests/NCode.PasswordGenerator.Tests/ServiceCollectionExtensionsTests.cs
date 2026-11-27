@@ -26,6 +26,19 @@ public class ServiceCollectionExtensionsTests : BaseTests
     }
 
     [Fact]
+    public async Task AddPasswordGenerator_GivenDefaultOptions_ThenStartupValidationSucceeds()
+    {
+        await using var provider = new ServiceCollection()
+            .AddPasswordGenerator()
+            .BuildServiceProvider();
+        var startupValidator = provider.GetRequiredService<IAsyncStartupValidator>();
+
+        var exception = await Record.ExceptionAsync(() => startupValidator.ValidateAsync(CancellationToken.None));
+
+        Assert.Null(exception);
+    }
+
+    [Fact]
     public async Task AddPasswordGenerator_WhenOptionsInvalid_ThenStartupValidationThrows()
     {
         await using var provider = new ServiceCollection()
@@ -47,7 +60,9 @@ public class ServiceCollectionExtensionsTests : BaseTests
             .BuildServiceProvider();
         var accessor = provider.GetRequiredService<IOptions<PasswordGeneratorOptions>>();
 
-        Assert.Throws<OptionsValidationException>(() => accessor.Value);
+        var exception = Assert.Throws<OptionsValidationException>(() => accessor.Value);
+
+        Assert.Contains(MaxAttemptsMessage, exception.Failures);
     }
 
     [Fact]

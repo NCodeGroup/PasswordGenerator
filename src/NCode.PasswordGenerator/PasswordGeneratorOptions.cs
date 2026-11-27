@@ -379,6 +379,24 @@ public class PasswordGeneratorOptions
         }
     }
 
+    /// <summary>
+    /// Estimates the entropy, in bits, of a password of <paramref name="length"/> characters generated with these options,
+    /// as the length times the base-2 logarithm of the number of distinct characters in <see cref="CharacterSet"/>.
+    /// </summary>
+    /// <remarks>
+    /// The estimate is an upper bound, because the minimum counts and the limit on consecutive identical characters
+    /// narrow the passwords that can be generated.
+    /// </remarks>
+    /// <param name="length">The number of characters in the password.</param>
+    /// <returns>The estimated entropy in bits, or <c>0</c> when <see cref="CharacterSet"/> is empty.</returns>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="length"/> is negative.</exception>
+    public double EstimateEntropyBits(int length)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(length);
+        var count = new HashSet<char>(CharacterSet).Count;
+        return count == 0 ? 0 : length * Math.Log2(count);
+    }
+
     internal bool AreIdentical(int i, ReadOnlySpan<char> password)
     {
         var maxConsecutive = MaxConsecutiveIdenticalCharacters;

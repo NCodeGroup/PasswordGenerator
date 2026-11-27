@@ -331,4 +331,55 @@ public class PasswordGeneratorOptionsTests : BaseTests
             false
         };
     }
+
+    [Fact]
+    public void EstimateEntropyBits_GivenDefaultOptions_ThenUsesDistinctCharacters()
+    {
+        var options = new PasswordGeneratorOptions();
+
+        var bits = options.EstimateEntropyBits(16);
+
+        Assert.Equal(16 * Math.Log2(91), bits, 10);
+    }
+
+    [Fact]
+    public void EstimateEntropyBits_WhenAmbiguousDigitsExcluded_ThenCountsRemainingDigits()
+    {
+        var options = new PasswordGeneratorOptions
+        {
+            MinLowercaseCharacters = 0,
+            MinUppercaseCharacters = 0,
+            MinNumericCharacters = 1,
+            MinSpecialCharacters = 0,
+        };
+        options.SetExcludedCharacters(PasswordGeneratorOptions.AmbiguousCharacters);
+
+        var bits = options.EstimateEntropyBits(4);
+
+        Assert.Equal(12.0, bits, 10);
+    }
+
+    [Fact]
+    public void EstimateEntropyBits_WhenCharacterSetEmpty_ThenZero()
+    {
+        var options = new PasswordGeneratorOptions
+        {
+            MinLowercaseCharacters = 0,
+            MinUppercaseCharacters = 0,
+            MinNumericCharacters = 0,
+            MinSpecialCharacters = 0,
+        };
+
+        var bits = options.EstimateEntropyBits(16);
+
+        Assert.Equal(0.0, bits);
+    }
+
+    [Fact]
+    public void EstimateEntropyBits_GivenNegativeLength_ThenThrows()
+    {
+        var options = new PasswordGeneratorOptions();
+
+        Assert.Throws<ArgumentOutOfRangeException>(() => options.EstimateEntropyBits(-1));
+    }
 }

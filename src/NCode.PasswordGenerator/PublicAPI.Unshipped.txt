@@ -6,6 +6,7 @@ NCode.PasswordGenerator.IPasswordGenerator.GeneratePinned(System.Action<NCode.Pa
 NCode.PasswordGenerator.PasswordGenerator.GeneratePinned() -> System.Buffers.IMemoryOwner<char>!
 NCode.PasswordGenerator.PasswordGenerator.GeneratePinned(NCode.PasswordGenerator.PasswordGeneratorOptions! options) -> System.Buffers.IMemoryOwner<char>!
 NCode.PasswordGenerator.PasswordGenerator.GeneratePinned(System.Action<NCode.PasswordGenerator.PasswordGeneratorOptions!>! optionsConfigurator) -> System.Buffers.IMemoryOwner<char>!
+NCode.PasswordGenerator.PasswordGeneratorOptions.EstimateEntropyBits(int length) -> double
 NCode.PasswordGenerator.PasswordGeneratorOptions.ExcludedCharacters.get -> string!
 NCode.PasswordGenerator.PasswordGeneratorOptions.ExcludedCharacters.set -> void
 NCode.PasswordGenerator.PasswordGeneratorOptions.SetExcludedCharacters(string! value) -> NCode.PasswordGenerator.PasswordGeneratorOptions!

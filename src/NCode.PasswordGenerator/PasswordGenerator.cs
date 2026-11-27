@@ -1,20 +1,7 @@
-﻿#region Copyright Preamble
-// 
-//    Copyright @ 2023 NCode Group
-// 
-//    Licensed under the Apache License, Version 2.0 (the "License");
-//    you may not use this file except in compliance with the License.
-//    You may obtain a copy of the License at
-// 
-//        http://www.apache.org/licenses/LICENSE-2.0
-// 
-//    Unless required by applicable law or agreed to in writing, software
-//    distributed under the License is distributed on an "AS IS" BASIS,
-//    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//    See the License for the specific language governing permissions and
-//    limitations under the License.
-#endregion
+// Copyright © NCode Group
+// SPDX-License-Identifier: Apache-2.0
 
+using System.Buffers;
 using System.Collections;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
@@ -27,10 +14,17 @@ namespace NCode.PasswordGenerator;
 /// Provides the ability to generate random passwords.
 /// </summary>
 /// <remarks>
-/// Be aware that the <see cref="IEnumerable{T}"/> implementation is an infinite sequence.
+/// Enumerating a generator yields a finite sequence: <see cref="PasswordGeneratorOptions.MaxEnumerations"/> passwords,
+/// 100 unless the default options set another number, each generated with the default options.
 /// </remarks>
 public interface IPasswordGenerator : IEnumerable<string>
 {
+    /// <summary>
+    /// The message of the <see cref="NotSupportedException"/> that the default <c>GeneratePinned</c> members throw.
+    /// </summary>
+    private const string PinnedNotSupportedMessage =
+        "This IPasswordGenerator implementation doesn't generate passwords into pinned buffers.";
+
     /// <summary>
     /// Generates a random password using the default options.
     /// </summary>
@@ -70,6 +64,43 @@ public interface IPasswordGenerator : IEnumerable<string>
     /// <param name="options">The <see cref="PasswordGeneratorOptions"/> that defines the rules for generating passwords.</param>
     /// <param name="password">The destination buffer for the newly generated password.</param>
     void Generate(PasswordGeneratorOptions options, Span<char> password);
+
+    /// <summary>
+    /// Generates a random password using the default options, into a pinned buffer that is zeroed when disposed.
+    /// </summary>
+    /// <returns>
+    /// The owner of the buffer that holds the newly generated password. Dispose it as soon as the password is no
+    /// longer needed; its <see cref="IMemoryOwner{T}.Memory"/> throws <see cref="ObjectDisposedException"/> afterwards.
+    /// </returns>
+    /// <exception cref="NotSupportedException">The implementation doesn't override this member.</exception>
+    IMemoryOwner<char> GeneratePinned() =>
+        throw new NotSupportedException(PinnedNotSupportedMessage);
+
+    /// <summary>
+    /// Generates a random password using the rules from the specified <paramref name="optionsConfigurator"/>, into a
+    /// pinned buffer that is zeroed when disposed.
+    /// </summary>
+    /// <param name="optionsConfigurator">A callback method that is invoked to configure the <see cref="PasswordGeneratorOptions"/>.</param>
+    /// <returns>
+    /// The owner of the buffer that holds the newly generated password. Dispose it as soon as the password is no
+    /// longer needed; its <see cref="IMemoryOwner{T}.Memory"/> throws <see cref="ObjectDisposedException"/> afterwards.
+    /// </returns>
+    /// <exception cref="NotSupportedException">The implementation doesn't override this member.</exception>
+    IMemoryOwner<char> GeneratePinned(Action<PasswordGeneratorOptions> optionsConfigurator) =>
+        throw new NotSupportedException(PinnedNotSupportedMessage);
+
+    /// <summary>
+    /// Generates a random password using the rules from the specified <paramref name="options"/>, into a
+    /// pinned buffer that is zeroed when disposed.
+    /// </summary>
+    /// <param name="options">The <see cref="PasswordGeneratorOptions"/> that defines the rules for generating passwords.</param>
+    /// <returns>
+    /// The owner of the buffer that holds the newly generated password. Dispose it as soon as the password is no
+    /// longer needed; its <see cref="IMemoryOwner{T}.Memory"/> throws <see cref="ObjectDisposedException"/> afterwards.
+    /// </returns>
+    /// <exception cref="NotSupportedException">The implementation doesn't override this member.</exception>
+    IMemoryOwner<char> GeneratePinned(PasswordGeneratorOptions options) =>
+        throw new NotSupportedException(PinnedNotSupportedMessage);
 }
 
 /// <summary>
@@ -78,9 +109,33 @@ public interface IPasswordGenerator : IEnumerable<string>
 public class PasswordGenerator : IPasswordGenerator
 {
     /// <summary>
+    /// The message of the <see cref="InvalidOperationException"/> thrown when the requested password length is too small.
+    /// </summary>
+    private const string LengthTooSmallMessage = "The requested password length is too small.";
+
+    /// <summary>
     /// Gets a singleton instance for <see cref="IPasswordGenerator"/> that uses the default options.
     /// </summary>
     public static IPasswordGenerator Default { get; } = new PasswordGenerator();
+
+    /// <summary>
+    /// Fills the start of <paramref name="destination"/> with characters chosen at random from <paramref name="choices"/>.
+    /// </summary>
+    /// <param name="choices">The characters to choose from.</param>
+    /// <param name="count">
+    /// How many characters to fill: none when zero or less, and all of <paramref name="destination"/> when larger.
+    /// </param>
+    /// <param name="destination">The buffer to fill.</param>
+    /// <returns>The part of <paramref name="destination"/> after the filled characters.</returns>
+    private static Span<char> FillRandom(ReadOnlySpan<char> choices, int count, Span<char> destination)
+    {
+        var take = Math.Min(count, destination.Length);
+        if (take <= 0)
+            return destination;
+
+        RandomNumberGenerator.GetItems(choices, destination[..take]);
+        return destination[take..];
+    }
 
     private PasswordGeneratorOptions DefaultOptions { get; }
 
@@ -111,10 +166,6 @@ public class PasswordGenerator : IPasswordGenerator
     {
         // nothing
     }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal virtual int GetRandomInt32(int toExclusive) =>
-        RandomNumberGenerator.GetInt32(toExclusive);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal virtual int GetRandomInt32(int fromInclusive, int toExclusive) =>
@@ -151,7 +202,7 @@ public class PasswordGenerator : IPasswordGenerator
     public void Generate(PasswordGeneratorOptions options, Span<char> password)
     {
         if (password.Length < options.MinLength)
-            throw new InvalidOperationException("The requested password length is too small.");
+            throw new InvalidOperationException(LengthTooSmallMessage);
 
         if (password.Length > options.MaxLength)
             throw new InvalidOperationException("The requested password length is too large.");
@@ -177,30 +228,46 @@ public class PasswordGenerator : IPasswordGenerator
             if (IsValid(options, password)) return;
         }
 
+        password.Clear();
         throw new InvalidOperationException("Too many attempts.");
     }
 
     internal virtual string FisherYatesShuffle(string value) =>
-        string.Create(value.Length, value, (dst, src) =>
+        string.Create(value.Length, value, static (dst, src) =>
         {
             src.AsSpan().CopyTo(dst);
-            FisherYatesShuffle(dst);
+            RandomNumberGenerator.Shuffle(dst);
         });
 
-    private void FisherYatesShuffle(Span<char> chars)
+    /// <summary>
+    /// Picks the length of the next password: the minimum length when the minimum and maximum lengths are equal,
+    /// and otherwise a random length from the minimum to the maximum, both included.
+    /// </summary>
+    /// <param name="options">The <see cref="PasswordGeneratorOptions"/> that set the length range.</param>
+    /// <returns>The length to generate.</returns>
+    /// <exception cref="InvalidOperationException">The chosen length is zero or less.</exception>
+    internal int GetLength(PasswordGeneratorOptions options)
     {
-        for (var i = 0; i < chars.Length - 1; ++i)
-        {
-            var j = GetRandomInt32(i, chars.Length);
-            if (i == j) continue;
-            (chars[i], chars[j]) = (chars[j], chars[i]);
-        }
-    }
-
-    internal int GetLength(PasswordGeneratorOptions options) =>
-        options.MinLength == options.MaxLength
+        var length = options.MinLength == options.MaxLength
             ? options.MinLength
             : GetRandomInt32(options.MinLength, options.MaxLength + 1);
+
+        if (length <= 0)
+            throw new InvalidOperationException(LengthTooSmallMessage);
+
+        return length;
+    }
+
+    /// <summary>
+    /// Creates the buffer that a pinned password is generated into.
+    /// </summary>
+    /// <param name="length">The number of characters the buffer holds.</param>
+    /// <returns>A new buffer that the caller disposes.</returns>
+    /// <remarks>
+    /// Virtual so that unit tests can substitute a buffer they observe.
+    /// </remarks>
+    internal virtual PinnedPasswordBuffer CreatePinnedBuffer(int length) =>
+        new(length);
 
     // for unit tests
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -230,45 +297,64 @@ public class PasswordGenerator : IPasswordGenerator
             return;
         }
 
-        var special = options.SpecialCharacters;
-        const string numeric = PasswordGeneratorOptions.NumericCharacters;
-        const string lowercase = PasswordGeneratorOptions.LowercaseCharacters;
-        const string uppercase = PasswordGeneratorOptions.UppercaseCharacters;
+        var remaining = password;
+        remaining = FillRandom(options.SpecialCharacters, options.MinSpecialCharacters, remaining);
+        remaining = FillRandom(PasswordGeneratorOptions.NumericCharacters, options.MinNumericCharacters, remaining);
+        remaining = FillRandom(PasswordGeneratorOptions.LowercaseCharacters, options.MinLowercaseCharacters, remaining);
+        remaining = FillRandom(PasswordGeneratorOptions.UppercaseCharacters, options.MinUppercaseCharacters, remaining);
+        FillRandom(characterSet, remaining.Length, remaining);
 
-        var remainingSpecial = options.MinSpecialCharacters;
-        var remainingNumeric = options.MinNumericCharacters;
-        var remainingLowercase = options.MinLowercaseCharacters;
-        var remainingUppercase = options.MinUppercaseCharacters;
+        RandomNumberGenerator.Shuffle(password);
+    }
 
-        for (var i = 0; i < password.Length; ++i)
+    /// <summary>
+    /// Generates a random password using the default options, into a pinned buffer that is zeroed when disposed.
+    /// </summary>
+    /// <returns>
+    /// The owner of the buffer that holds the newly generated password. Dispose it as soon as the password is no
+    /// longer needed; its <see cref="IMemoryOwner{T}.Memory"/> throws <see cref="ObjectDisposedException"/> afterwards.
+    /// </returns>
+    public IMemoryOwner<char> GeneratePinned() =>
+        GeneratePinned(DefaultOptions);
+
+    /// <summary>
+    /// Generates a random password using the rules from the specified <paramref name="optionsConfigurator"/>, into a
+    /// pinned buffer that is zeroed when disposed.
+    /// </summary>
+    /// <param name="optionsConfigurator">A callback method that is invoked to configure the <see cref="PasswordGeneratorOptions"/>.</param>
+    /// <returns>
+    /// The owner of the buffer that holds the newly generated password. Dispose it as soon as the password is no
+    /// longer needed; its <see cref="IMemoryOwner{T}.Memory"/> throws <see cref="ObjectDisposedException"/> afterwards.
+    /// </returns>
+    public IMemoryOwner<char> GeneratePinned(Action<PasswordGeneratorOptions> optionsConfigurator)
+    {
+        var options = Configure(optionsConfigurator);
+        return GeneratePinned(options);
+    }
+
+    /// <summary>
+    /// Generates a random password using the rules from the specified <paramref name="options"/>, into a
+    /// pinned buffer that is zeroed when disposed.
+    /// </summary>
+    /// <param name="options">The <see cref="PasswordGeneratorOptions"/> that defines the rules for generating passwords.</param>
+    /// <returns>
+    /// The owner of the buffer that holds the newly generated password. Dispose it as soon as the password is no
+    /// longer needed; its <see cref="IMemoryOwner{T}.Memory"/> throws <see cref="ObjectDisposedException"/> afterwards.
+    /// </returns>
+    public IMemoryOwner<char> GeneratePinned(PasswordGeneratorOptions options)
+    {
+        var length = GetLength(options);
+        var buffer = CreatePinnedBuffer(length);
+        try
         {
-            if (remainingSpecial > 0)
-            {
-                password[i] = special[GetRandomInt32(special.Length)];
-                --remainingSpecial;
-            }
-            else if (remainingNumeric > 0)
-            {
-                password[i] = numeric[GetRandomInt32(numeric.Length)];
-                --remainingNumeric;
-            }
-            else if (remainingLowercase > 0)
-            {
-                password[i] = lowercase[GetRandomInt32(lowercase.Length)];
-                --remainingLowercase;
-            }
-            else if (remainingUppercase > 0)
-            {
-                password[i] = uppercase[GetRandomInt32(uppercase.Length)];
-                --remainingUppercase;
-            }
-            else
-            {
-                password[i] = characterSet[GetRandomInt32(characterSet.Length)];
-            }
+            Generate(options, buffer.Memory.Span);
+            return buffer;
         }
-
-        FisherYatesShuffle(password);
+        catch
+        {
+            buffer.Dispose();
+            throw;
+        }
     }
 
     /// <inheritdoc />

@@ -1,1 +1,7 @@
 #nullable enable
+NCode.PasswordGenerator.IPasswordGenerator.GeneratePinned() -> System.Buffers.IMemoryOwner<char>!
+NCode.PasswordGenerator.IPasswordGenerator.GeneratePinned(NCode.PasswordGenerator.PasswordGeneratorOptions! options) -> System.Buffers.IMemoryOwner<char>!
+NCode.PasswordGenerator.IPasswordGenerator.GeneratePinned(System.Action<NCode.PasswordGenerator.PasswordGeneratorOptions!>! optionsConfigurator) -> System.Buffers.IMemoryOwner<char>!
+NCode.PasswordGenerator.PasswordGenerator.GeneratePinned() -> System.Buffers.IMemoryOwner<char>!
+NCode.PasswordGenerator.PasswordGenerator.GeneratePinned(NCode.PasswordGenerator.PasswordGeneratorOptions! options) -> System.Buffers.IMemoryOwner<char>!
+NCode.PasswordGenerator.PasswordGenerator.GeneratePinned(System.Action<NCode.PasswordGenerator.PasswordGeneratorOptions!>! optionsConfigurator) -> System.Buffers.IMemoryOwner<char>!

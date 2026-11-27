@@ -1,21 +1,7 @@
-#region Copyright Preamble
-// 
-//    Copyright @ 2023 NCode Group
-// 
-//    Licensed under the Apache License, Version 2.0 (the "License");
-//    you may not use this file except in compliance with the License.
-//    You may obtain a copy of the License at
-// 
-//        http://www.apache.org/licenses/LICENSE-2.0
-// 
-//    Unless required by applicable law or agreed to in writing, software
-//    distributed under the License is distributed on an "AS IS" BASIS,
-//    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//    See the License for the specific language governing permissions and
-//    limitations under the License.
-#endregion
+// Copyright © NCode Group
+// SPDX-License-Identifier: Apache-2.0
 
-using System.Text;
+using System.Buffers;
 
 namespace NCode.PasswordGenerator;
 
@@ -271,6 +257,31 @@ public class PasswordGeneratorOptions
     private string? SpecialOrNull { get; set; }
 
     /// <summary>
+    /// Gets or sets the special-character search values last built, or <see langword="null"/> before the first use.
+    /// </summary>
+    private SpecialCharacterSearch? SpecialSearchOrNull { get; set; }
+
+    /// <summary>
+    /// Gets the search values for the current <see cref="SpecialCharacters"/>, built again when that string differs
+    /// from the one the cached values were built from.
+    /// </summary>
+    private SearchValues<char> SpecialSearchValues
+    {
+        get
+        {
+            // Keyed by the source string rather than reset by the setter, so a read that races a write can't keep stale values.
+            var special = SpecialCharacters;
+            var search = SpecialSearchOrNull;
+            if (search is not null && ReferenceEquals(search.Characters, special))
+                return search.Values;
+
+            var values = SearchValues.Create(special);
+            SpecialSearchOrNull = new SpecialCharacterSearch(special, values);
+            return values;
+        }
+    }
+
+    /// <summary>
     /// Gets or sets the list of special characters such as punctuations and symbols that are to be included in the generated password.
     /// </summary>
     public string SpecialCharacters
@@ -295,12 +306,11 @@ public class PasswordGeneratorOptions
     {
         get
         {
-            var builder = new StringBuilder();
-            if (MinLowercaseCharacters > 0) builder.Append(LowercaseCharacters);
-            if (MinUppercaseCharacters > 0) builder.Append(UppercaseCharacters);
-            if (MinNumericCharacters > 0) builder.Append(NumericCharacters);
-            if (MinSpecialCharacters > 0) builder.Append(SpecialCharacters);
-            return builder.ToString();
+            var lowercase = MinLowercaseCharacters > 0 ? LowercaseCharacters : string.Empty;
+            var uppercase = MinUppercaseCharacters > 0 ? UppercaseCharacters : string.Empty;
+            var numeric = MinNumericCharacters > 0 ? NumericCharacters : string.Empty;
+            var special = MinSpecialCharacters > 0 ? SpecialCharacters : string.Empty;
+            return string.Concat(lowercase, uppercase, numeric, special);
         }
     }
 
@@ -338,6 +348,7 @@ public class PasswordGeneratorOptions
         var countNumeric = 0;
         var countLowercase = 0;
         var countUppercase = 0;
+        var special = SpecialSearchValues;
 
         for (var i = 0; i < password.Length; ++i)
         {
@@ -349,7 +360,7 @@ public class PasswordGeneratorOptions
             var c = password[i];
 
             // FYI, special may overlap with numeric and alpha
-            if (SpecialCharacters.Contains(c))
+            if (special.Contains(c))
             {
                 ++countSpecial;
             }

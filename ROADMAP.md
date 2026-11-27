@@ -14,14 +14,10 @@ the maintainers say whether it fits.
 
 [//]: # "Maintainers: list what the project plans to do in the next twelve months, one bullet each."
 
-- **.NET 10.** Move the library from `netstandard2.1` to `net10.0` and build it on the span APIs that version has, such
-  as `RandomNumberGenerator.GetItems` and `RandomNumberGenerator.Shuffle`
-  ([#24](https://github.com/NCodeGroup/PasswordGenerator/issues/24)), and run the tests on a supported framework
-  ([#23](https://github.com/NCodeGroup/PasswordGenerator/issues/23)).
-- **Package metadata.** Give the NuGet package its description and tags
-  ([#22](https://github.com/NCodeGroup/PasswordGenerator/issues/22)).
-- **Publishing.** Publish to nuget.org through trusted publishing from a protected environment, instead of with a
-  long-lived API key ([#11](https://github.com/NCodeGroup/PasswordGenerator/issues/11)).
+- **Publishing.** Publish the first release through `.github/workflows/publish.yml`, which pushes to nuget.org through
+  trusted publishing from the protected `nuget` environment; its one-time setup is done
+  ([#40](https://github.com/NCodeGroup/PasswordGenerator/issues/40)). Then revoke any old nuget.org API key that is
+  still active ([#43](https://github.com/NCodeGroup/PasswordGenerator/issues/43)).
 - **Supply chain.** Keep external inputs pinned and current
   ([ADR-0008](docs/decisions/project-template/0008-external-inputs-are-pinned-and-kept-current.md)), and raise the
   OpenSSF Scorecard score where the repository controls it

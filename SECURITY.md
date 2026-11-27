@@ -6,8 +6,6 @@ Report a vulnerability in NCode.PasswordGenerator privately. Never put it in a p
 
 On the repository's **Security** tab, choose **Report a vulnerability**. The report reaches the maintainers only, and the fix is discussed in a private security advisory until it is released. If the tab has no such button, open an issue that asks for a private contact, and leave out every detail of the vulnerability.
 
-[//]: # "Maintainers: the button appears once private vulnerability reporting is turned on in the repository's security settings."
-
 Include:
 
 - what is affected: the package and its version, and the file, endpoint or feature;
@@ -33,10 +31,11 @@ Fixes ship as a patch of the latest minor version of the current major version. 
 
 ## Verify a Package
 
-The packages are built in CI from a tagged commit of this repository, deterministically and with Source Link. They reach nuget.org only through the `publish` job of `.github/workflows/main.yml`, which runs when a GitHub release is published and pushes the packages with a NuGet API key kept in the repository's secrets; each package's version is its release's tag, which `version.json` must hold: the `build` job fails a release whose packages carry another version.
+The packages are built in CI from a tagged commit of this repository, deterministically and with Source Link. They reach nuget.org through `.github/workflows/publish.yml`, which publishes them from a published GitHub release through nuget.org trusted publishing once a maintainer approves its `nuget` environment: each publication uses a short-lived API key, neither the repository nor its organization stores a nuget.org API key, and each package's version is its release's tag, which `version.json` must hold: the `pack` job fails a release whose packages carry another version.
 
 - Each package's PDB maps every source file to its commit in this repository, and its symbol package (`.snupkg`) is on the nuget.org symbol server. With Source Link and the nuget.org symbol server turned on in your debugger, you step into the exact source a package was built from. NuGet Package Explorer shows whether a package's Source Link and deterministic build are valid.
 - nuget.org signs every package it accepts: `dotnet nuget verify --all <package>.nupkg` checks that signature.
+- Each release carries build provenance: `gh attestation verify <package>.nupkg --repo NCodeGroup/PasswordGenerator` checks that a package was built by this repository's workflows from the tagged commit.
 
 ## Scope
 

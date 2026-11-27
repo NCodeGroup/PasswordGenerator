@@ -77,7 +77,8 @@ public interface IPasswordGenerator : IEnumerable<string>
         throw new NotSupportedException(PinnedNotSupportedMessage);
 
     /// <summary>
-    /// Generates a random password using the rules from the specified <paramref name="optionsConfigurator"/>, into a pinned buffer that is zeroed when disposed.
+    /// Generates a random password using the rules from the specified <paramref name="optionsConfigurator"/>, into a
+    /// pinned buffer that is zeroed when disposed.
     /// </summary>
     /// <param name="optionsConfigurator">A callback method that is invoked to configure the <see cref="PasswordGeneratorOptions"/>.</param>
     /// <returns>
@@ -89,7 +90,8 @@ public interface IPasswordGenerator : IEnumerable<string>
         throw new NotSupportedException(PinnedNotSupportedMessage);
 
     /// <summary>
-    /// Generates a random password using the rules from the specified <paramref name="options"/>, into a pinned buffer that is zeroed when disposed.
+    /// Generates a random password using the rules from the specified <paramref name="options"/>, into a
+    /// pinned buffer that is zeroed when disposed.
     /// </summary>
     /// <param name="options">The <see cref="PasswordGeneratorOptions"/> that defines the rules for generating passwords.</param>
     /// <returns>

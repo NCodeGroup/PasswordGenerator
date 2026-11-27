@@ -13,7 +13,8 @@ the user-facing summary.
   generator.
 - **R2.** A password `Generate` or `GeneratePinned` returns or writes meets the options it was generated with: its
   length is within `MinLength` and `MaxLength`, it holds at least the minimum count of lowercase, uppercase, numeric
-  and special characters, and no character repeats more than `MaxConsecutiveIdenticalCharacters` times in a row.
+  and special characters, no character repeats more than `MaxConsecutiveIdenticalCharacters` times in a row, and it
+  contains none of `ExcludedCharacters`.
 - **R3.** When the options can't be met, because the length drawn from the options is 0 or less, the buffer's length is
   outside the length range, the minimum counts add up to zero or to more than the length, or no attempt within
   `MaxAttempts` passes `IsValid`, `Generate` and `GeneratePinned` throw `InvalidOperationException` instead of returning

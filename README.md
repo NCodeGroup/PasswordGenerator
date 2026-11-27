@@ -28,7 +28,9 @@ void ConfigureServices(IServiceCollection services)
         .SetMinNumericCharacters(1)
         .SetMinSpecialCharacters(1)
         .SetSpecialCharacters("!#$%&()*+,-./:;<=>?@[]^_`{|}~")
+        .SetExcludedCharacters("")
     );
+    // invalid options stop the host when it starts
 
     // or configure from appsettings...
     services.Configure<PasswordGeneratorOptions>(
@@ -51,6 +53,18 @@ void UsageWithPinnedBuffer(IPasswordGenerator generator)
     // pinned so the GC never copies it, and zeroed when disposed
     using var password = generator.GeneratePinned();
     var span = password.Memory.Span;
+}
+
+void UsageWithoutAmbiguousCharacters(IPasswordGenerator generator)
+{
+    // leaves out look-alike characters such as 0, O, 1, I and l
+    var password = generator.Generate(options =>
+        options.SetExcludedCharacters(PasswordGeneratorOptions.AmbiguousCharacters));
+}
+
+void UsageWithEntropyEstimate()
+{
+    var bits = new PasswordGeneratorOptions().EstimateEntropyBits(16); // about 104 bits
 }
 
 void UsageWithCustomOptions(IPasswordGenerator generator)

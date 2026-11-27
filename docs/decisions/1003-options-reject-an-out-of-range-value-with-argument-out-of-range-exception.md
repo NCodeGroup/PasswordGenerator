@@ -6,11 +6,11 @@
 
 ## Context
 
-`PasswordGeneratorOptions` rejects a length that contradicts the other bound in two places. The `MinLength` and
-`MaxLength` setters throw `ArgumentOutOfRangeException` naming the parameter, with a message. `SetLengthRange(minLength,
-maxLength)` threw an `InvalidOperationException` with no message for `minLength` greater than `maxLength`, so a caller
-saw neither which argument was wrong nor why. The exception type is part of the public behavior: a caller that catches
-one type misses another.
+`PasswordGeneratorOptions` rejects a length that contradicts the other bound in three places: the `MinLength` and
+`MaxLength` setters, and `SetLengthRange(minLength, maxLength)` when `minLength` is greater than `maxLength`. A caller
+that passes such a value needs to know which argument is wrong and why. The exception type is part of the public
+behavior: a caller that catches one type misses another, so members that reject a value for the same reason throw the
+same type.
 
 ## Decision
 
@@ -31,8 +31,9 @@ produce a password when it runs.
 
 ## Consequences
 
-- Code that catches `InvalidOperationException` from `SetLengthRange` catches `ArgumentOutOfRangeException` instead, a
-  breaking change released in 2.0.0.
+- A caller handles a rejected length the same way whichever member rejects it: it catches
+  `ArgumentOutOfRangeException` and reads `ParamName` and `ActualValue`. The changelog lists the exception type of
+  `SetLengthRange` as a breaking change in 2.0.0.
 - A new option member that rejects a value follows the same rule.
 
 ## References

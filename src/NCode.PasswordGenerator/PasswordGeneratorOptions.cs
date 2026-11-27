@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 using System.Buffers;
+using System.Text;
 
 namespace NCode.PasswordGenerator;
 
@@ -26,6 +27,11 @@ public class PasswordGeneratorOptions
     internal const string NumericCharacters = "0123456789";
     private const string DefaultSpecialCharacters = "!#$%&()*+,-./:;<=>?@[]^_`{|}~";
 
+    /// <summary>
+    /// The look-alike characters of the default character sets, to pass to <see cref="SetExcludedCharacters"/>.
+    /// </summary>
+    public const string AmbiguousCharacters = "0O1Il|";
+
     private int _minLength = DefaultMinLength;
     private int _maxLength = DefaultMaxLength;
 
@@ -49,6 +55,7 @@ public class PasswordGeneratorOptions
         MinNumericCharacters = other.MinNumericCharacters;
         MinSpecialCharacters = other.MinSpecialCharacters;
         SpecialOrNull = other.SpecialOrNull;
+        ExcludedOrNull = other.ExcludedOrNull;
     }
 
     /// <summary>
@@ -66,6 +73,7 @@ public class PasswordGeneratorOptions
         MinNumericCharacters = DefaultMinNumericCharacters;
         MinSpecialCharacters = DefaultMinSpecialCharacters;
         SpecialOrNull = null;
+        ExcludedOrNull = null;
         return this;
     }
 
@@ -299,17 +307,74 @@ public class PasswordGeneratorOptions
         return this;
     }
 
+    private string? ExcludedOrNull { get; set; }
+
     /// <summary>
-    /// Gets a <see cref="string"/> containing the allowable characters in a password.
+    /// Gets or sets the characters that are left out of every character class and never appear in a generated password.
+    /// </summary>
+    public string ExcludedCharacters
+    {
+        get => ExcludedOrNull ?? string.Empty;
+        set => ExcludedOrNull = value;
+    }
+
+    /// <summary>
+    /// Sets the characters that are left out of every character class and never appear in a generated password.
+    /// </summary>
+    public PasswordGeneratorOptions SetExcludedCharacters(string value)
+    {
+        ExcludedCharacters = value;
+        return this;
+    }
+
+    private string RemoveExcluded(string characters)
+    {
+        var excluded = ExcludedCharacters;
+        if (excluded.Length == 0)
+            return characters;
+
+        var builder = new StringBuilder(characters.Length);
+        foreach (var c in characters)
+        {
+            if (!excluded.Contains(c))
+                builder.Append(c);
+        }
+
+        return builder.ToString();
+    }
+
+    /// <summary>
+    /// Gets the lower-case characters that are left after removing <see cref="ExcludedCharacters"/>.
+    /// </summary>
+    internal string AllowedLowercaseCharacters => RemoveExcluded(LowercaseCharacters);
+
+    /// <summary>
+    /// Gets the upper-case characters that are left after removing <see cref="ExcludedCharacters"/>.
+    /// </summary>
+    internal string AllowedUppercaseCharacters => RemoveExcluded(UppercaseCharacters);
+
+    /// <summary>
+    /// Gets the numeric characters that are left after removing <see cref="ExcludedCharacters"/>.
+    /// </summary>
+    internal string AllowedNumericCharacters => RemoveExcluded(NumericCharacters);
+
+    /// <summary>
+    /// Gets the special characters that are left after removing <see cref="ExcludedCharacters"/>.
+    /// </summary>
+    internal string AllowedSpecialCharacters => RemoveExcluded(SpecialCharacters);
+
+    /// <summary>
+    /// Gets a <see cref="string"/> containing the allowable characters in a password, without the
+    /// <see cref="ExcludedCharacters"/>.
     /// </summary>
     public string CharacterSet
     {
         get
         {
-            var lowercase = MinLowercaseCharacters > 0 ? LowercaseCharacters : string.Empty;
-            var uppercase = MinUppercaseCharacters > 0 ? UppercaseCharacters : string.Empty;
-            var numeric = MinNumericCharacters > 0 ? NumericCharacters : string.Empty;
-            var special = MinSpecialCharacters > 0 ? SpecialCharacters : string.Empty;
+            var lowercase = MinLowercaseCharacters > 0 ? AllowedLowercaseCharacters : string.Empty;
+            var uppercase = MinUppercaseCharacters > 0 ? AllowedUppercaseCharacters : string.Empty;
+            var numeric = MinNumericCharacters > 0 ? AllowedNumericCharacters : string.Empty;
+            var special = MinSpecialCharacters > 0 ? AllowedSpecialCharacters : string.Empty;
             return string.Concat(lowercase, uppercase, numeric, special);
         }
     }

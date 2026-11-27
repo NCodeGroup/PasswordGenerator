@@ -141,6 +141,46 @@ public class PasswordGeneratorOptionsTests : BaseTests
         Assert.Equal(special.Length, new HashSet<char>(special).Count);
     }
 
+    [Fact]
+    public void ExcludedCharacters_Default_IsEmpty()
+    {
+        var options = new PasswordGeneratorOptions();
+
+        Assert.Empty(options.ExcludedCharacters);
+    }
+
+    [Fact]
+    public void CharacterSet_WhenAmbiguousCharactersExcluded_ThenOmitsThem()
+    {
+        var options = new PasswordGeneratorOptions()
+            .SetExcludedCharacters(PasswordGeneratorOptions.AmbiguousCharacters);
+
+        Assert.Empty(options.CharacterSet.Intersect(PasswordGeneratorOptions.AmbiguousCharacters));
+        Assert.Equal(85, options.CharacterSet.Length);
+    }
+
+    [Fact]
+    public void Clone_CopiesExcludedCharacters()
+    {
+        const string excluded = "xyz";
+
+        var options = new PasswordGeneratorOptions().SetExcludedCharacters(excluded);
+
+        var clone = options.Clone();
+
+        Assert.Equal(excluded, clone.ExcludedCharacters);
+    }
+
+    [Fact]
+    public void Reset_ClearsExcludedCharacters()
+    {
+        var options = new PasswordGeneratorOptions().SetExcludedCharacters("xyz");
+
+        options.Reset();
+
+        Assert.Empty(options.ExcludedCharacters);
+    }
+
     [Theory]
     [InlineData(2, "__", -1)]
     [InlineData(2, "___", 2)]

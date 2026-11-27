@@ -10,17 +10,19 @@ public class ServiceCollectionExtensionsTests : BaseTests
 {
     private const string MaxAttemptsMessage = "MaxAttempts must be at least 1, but is 0.";
 
+    #region AddPasswordGenerator Tests
+
     [Fact]
-    public async Task AddPasswordGenerator_GivenDefaultOptions_ThenGeneratesValidPassword()
+    public async Task AddPasswordGenerator_GivenConfiguredOptions_ThenGeneratorUsesThem()
     {
         await using var provider = new ServiceCollection()
-            .AddPasswordGenerator()
+            .AddPasswordGenerator(options => options.SetExactLength(20))
             .BuildServiceProvider();
         var generator = provider.GetRequiredService<IPasswordGenerator>();
 
-        var password = generator.Generate(new PasswordGeneratorOptions());
+        var password = generator.Generate();
 
-        Assert.True(new PasswordGeneratorOptions().IsValid(password));
+        Assert.Equal(20, password.Length);
     }
 
     [Fact]
@@ -56,6 +58,9 @@ public class ServiceCollectionExtensionsTests : BaseTests
             .AddPasswordGenerator()
             .BuildServiceProvider();
 
-        Assert.Single(provider.GetServices<IValidateOptions<PasswordGeneratorOptions>>());
+        var validators = provider.GetServices<IValidateOptions<PasswordGeneratorOptions>>();
+        Assert.Single(validators);
     }
+
+    #endregion
 }

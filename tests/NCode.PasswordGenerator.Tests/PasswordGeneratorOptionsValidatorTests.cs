@@ -10,6 +10,8 @@ public class PasswordGeneratorOptionsValidatorTests : BaseTests
     private static ValidateOptionsResult Validate(PasswordGeneratorOptions options) =>
         new PasswordGeneratorOptionsValidator().Validate(null, options);
 
+    #region Validate Tests
+
     [Fact]
     public void Validate_GivenDefaultOptions_ThenSucceeds()
     {
@@ -118,6 +120,9 @@ public class PasswordGeneratorOptionsValidatorTests : BaseTests
 
         Assert.True(result.Failed);
         Assert.NotNull(result.Failures);
-        Assert.Equal(2, result.Failures.Count());
+        var failureCount = result.Failures.Count();
+        Assert.Equal(2, failureCount);
     }
+
+    #endregion
 }

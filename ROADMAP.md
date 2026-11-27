@@ -17,7 +17,7 @@ the maintainers say whether it fits.
 - **Publishing.** Publish the first release through `.github/workflows/publish.yml`, which pushes to nuget.org through
   trusted publishing from the protected `nuget` environment; its one-time setup is done
   ([#40](https://github.com/NCodeGroup/PasswordGenerator/issues/40)). Then revoke any old nuget.org API key that is
-  still active.
+  still active ([#43](https://github.com/NCodeGroup/PasswordGenerator/issues/43)).
 - **Supply chain.** Keep external inputs pinned and current
   ([ADR-0008](docs/decisions/project-template/0008-external-inputs-are-pinned-and-kept-current.md)), and raise the
   OpenSSF Scorecard score where the repository controls it

@@ -217,11 +217,19 @@ public class PasswordGenerator : IPasswordGenerator
                 "The provided destination buffer is too small to hold the minimum amount of required characters.");
 
         var maxAttempts = options.MaxAttempts;
-        var characterSet = FisherYatesShuffle(options.CharacterSet);
+        var characterSet = options.CharacterSet;
+        var pools = new CharacterPools
+        {
+            Special = options.AllowedSpecialCharacters,
+            Numeric = options.AllowedNumericCharacters,
+            Lowercase = options.AllowedLowercaseCharacters,
+            Uppercase = options.AllowedUppercaseCharacters,
+            All = FisherYatesShuffle(characterSet),
+        };
 
         for (var attempt = 0; attempt < maxAttempts; ++attempt)
         {
-            GenerateCore(options, characterSet, password);
+            GenerateCore(options, pools, password);
             if (IsValid(options, password)) return;
         }
 
@@ -286,7 +294,7 @@ public class PasswordGenerator : IPasswordGenerator
         return false;
     }
 
-    private void GenerateCore(PasswordGeneratorOptions options, string characterSet, Span<char> password)
+    private void GenerateCore(PasswordGeneratorOptions options, CharacterPools pools, Span<char> password)
     {
         if (SkipGenerateCore(out var result))
         {
@@ -295,11 +303,11 @@ public class PasswordGenerator : IPasswordGenerator
         }
 
         var remaining = password;
-        remaining = FillRandom(options.AllowedSpecialCharacters, options.MinSpecialCharacters, remaining);
-        remaining = FillRandom(options.AllowedNumericCharacters, options.MinNumericCharacters, remaining);
-        remaining = FillRandom(options.AllowedLowercaseCharacters, options.MinLowercaseCharacters, remaining);
-        remaining = FillRandom(options.AllowedUppercaseCharacters, options.MinUppercaseCharacters, remaining);
-        FillRandom(characterSet, remaining.Length, remaining);
+        remaining = FillRandom(pools.Special, options.MinSpecialCharacters, remaining);
+        remaining = FillRandom(pools.Numeric, options.MinNumericCharacters, remaining);
+        remaining = FillRandom(pools.Lowercase, options.MinLowercaseCharacters, remaining);
+        remaining = FillRandom(pools.Uppercase, options.MinUppercaseCharacters, remaining);
+        FillRandom(pools.All, remaining.Length, remaining);
 
         RandomNumberGenerator.Shuffle(password);
     }

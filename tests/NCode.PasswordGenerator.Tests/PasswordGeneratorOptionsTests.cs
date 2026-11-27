@@ -346,7 +346,7 @@ public class PasswordGeneratorOptionsTests : BaseTests
 
         var bits = options.EstimateEntropyBits(16);
 
-        Assert.Equal(16 * Math.Log2(91), bits, 10);
+        Assert.Equal(expected, bits, 10);
     }
 
     [Fact]
@@ -361,6 +361,7 @@ public class PasswordGeneratorOptionsTests : BaseTests
         };
         options.SetExcludedCharacters(PasswordGeneratorOptions.AmbiguousCharacters);
 
+        var expected = 16 * Math.Log2(91);
         var bits = options.EstimateEntropyBits(4);
 
         Assert.Equal(12.0, bits, 10);

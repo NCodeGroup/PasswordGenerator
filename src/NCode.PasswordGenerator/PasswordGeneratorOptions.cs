@@ -24,7 +24,7 @@ public class PasswordGeneratorOptions
     internal const string LowercaseCharacters = "abcdefghijklmnopqrstuvwxyz";
     internal const string UppercaseCharacters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     internal const string NumericCharacters = "0123456789";
-    private const string DefaultSpecialCharacters = "!;#$%&()*+,-./:;<=>?@[]^_`{|}~";
+    private const string DefaultSpecialCharacters = "!#$%&()*+,-./:;<=>?@[]^_`{|}~";
 
     private int _minLength = DefaultMinLength;
     private int _maxLength = DefaultMaxLength;

@@ -130,7 +130,15 @@ public class PasswordGeneratorOptionsTests : BaseTests
         Assert.Equal("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", options.CharacterSet);
 
         options.MinSpecialCharacters = 1;
-        Assert.Equal("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!;#$%&()*+,-./:;<=>?@[]^_`{|}~", options.CharacterSet);
+        Assert.Equal("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!#$%&()*+,-./:;<=>?@[]^_`{|}~", options.CharacterSet);
+    }
+
+    [Fact]
+    public void SpecialCharacters_Default_HasNoDuplicateCharacters()
+    {
+        var special = new PasswordGeneratorOptions().SpecialCharacters;
+
+        Assert.Equal(special.Length, new HashSet<char>(special).Count);
     }
 
     [Theory]

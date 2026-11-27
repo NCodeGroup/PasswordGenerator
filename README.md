@@ -27,7 +27,7 @@ void ConfigureServices(IServiceCollection services)
         .SetMinUppercaseCharacters(1)
         .SetMinNumericCharacters(1)
         .SetMinSpecialCharacters(1)
-        .SetSpecialCharacters("!;#$%&()*+,-./:;<=>?@[]^_`{|}~")
+        .SetSpecialCharacters("!#$%&()*+,-./:;<=>?@[]^_`{|}~")
     );
 
     // or configure from appsettings...

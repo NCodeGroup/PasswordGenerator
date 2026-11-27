@@ -33,6 +33,30 @@ public class PasswordGeneratorOptions
     /// </summary>
     public const string AmbiguousCharacters = "0O1Il|";
 
+    private static bool AreIdentical(ReadOnlySpan<char> slice)
+    {
+        var prev = slice[0];
+
+        foreach (var c in slice[1..])
+        {
+            if (c != prev) return false;
+            prev = c;
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// Adds a message to the list, formatted with the invariant culture.
+    /// </summary>
+    /// <param name="errors">The list to add the message to.</param>
+    /// <param name="message">The message to format and add.</param>
+    private static void AddError(List<string> errors, FormattableString message)
+    {
+        var text = message.ToString(CultureInfo.InvariantCulture);
+        errors.Add(text);
+    }
+
     private int _minLength = DefaultMinLength;
     private int _maxLength = DefaultMaxLength;
 
@@ -411,19 +435,6 @@ public class PasswordGeneratorOptions
         return i >= maxConsecutive && AreIdentical(password.Slice(i - maxConsecutive, maxConsecutive + 1));
     }
 
-    private static bool AreIdentical(ReadOnlySpan<char> slice)
-    {
-        var prev = slice[0];
-
-        foreach (var c in slice[1..])
-        {
-            if (c != prev) return false;
-            prev = c;
-        }
-
-        return true;
-    }
-
     /// <summary>
     /// Returns <c>true</c> or <c>false</c> whether the specified <paramref name="password"/> is valid according to configured
     /// rules on the current <see cref="PasswordGeneratorOptions"/> instance.
@@ -502,28 +513,18 @@ public class PasswordGeneratorOptions
         if (MaxConsecutiveIdenticalCharacters < 1)
             AddError(errors, $"MaxConsecutiveIdenticalCharacters must be at least 1, but is {MaxConsecutiveIdenticalCharacters}.");
 
-        AddEmptyClassError(errors, nameof(MinLowercaseCharacters), MinLowercaseCharacters, AllowedLowercaseCharacters, "lowercase");
-        AddEmptyClassError(errors, nameof(MinUppercaseCharacters), MinUppercaseCharacters, AllowedUppercaseCharacters, "uppercase");
-        AddEmptyClassError(errors, nameof(MinNumericCharacters), MinNumericCharacters, AllowedNumericCharacters, "numeric");
-        AddEmptyClassError(errors, nameof(MinSpecialCharacters), MinSpecialCharacters, AllowedSpecialCharacters, "special");
+        if (MinLowercaseCharacters > 0 && AllowedLowercaseCharacters.Length == 0)
+            AddError(errors, $"{nameof(MinLowercaseCharacters)} is {MinLowercaseCharacters}, but no lowercase character is left to choose from.");
+
+        if (MinUppercaseCharacters > 0 && AllowedUppercaseCharacters.Length == 0)
+            AddError(errors, $"{nameof(MinUppercaseCharacters)} is {MinUppercaseCharacters}, but no uppercase character is left to choose from.");
+
+        if (MinNumericCharacters > 0 && AllowedNumericCharacters.Length == 0)
+            AddError(errors, $"{nameof(MinNumericCharacters)} is {MinNumericCharacters}, but no numeric character is left to choose from.");
+
+        if (MinSpecialCharacters > 0 && AllowedSpecialCharacters.Length == 0)
+            AddError(errors, $"{nameof(MinSpecialCharacters)} is {MinSpecialCharacters}, but no special character is left to choose from.");
 
         return errors;
-    }
-
-    private static void AddEmptyClassError(List<string> errors, string name, int minimum, string allowed, string kind)
-    {
-        if (minimum > 0 && allowed.Length == 0)
-            AddError(errors, $"{name} is {minimum}, but no {kind} character is left to choose from.");
-    }
-
-    /// <summary>
-    /// Adds a message to the list, formatted with the invariant culture.
-    /// </summary>
-    /// <param name="errors">The list to add the message to.</param>
-    /// <param name="message">The message to format and add.</param>
-    private static void AddError(List<string> errors, FormattableString message)
-    {
-        var text = message.ToString(CultureInfo.InvariantCulture);
-        errors.Add(text);
     }
 }

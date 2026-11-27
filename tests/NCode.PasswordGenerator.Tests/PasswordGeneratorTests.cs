@@ -221,7 +221,9 @@ public class PasswordGeneratorTests : BaseTests
         {
             var password = PasswordGenerator.Default.Generate(options);
 
-            Assert.Empty(password.Intersect(PasswordGeneratorOptions.AmbiguousCharacters));
+            var ambiguous = password.Intersect(PasswordGeneratorOptions.AmbiguousCharacters);
+
+            Assert.Empty(ambiguous);
         }
     }
 

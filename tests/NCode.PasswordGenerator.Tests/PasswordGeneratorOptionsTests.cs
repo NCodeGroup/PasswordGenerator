@@ -103,7 +103,10 @@ public class PasswordGeneratorOptionsTests : BaseTests
     {
         const string password = "aB3!xY7#";
 
-        Assert.True(new PasswordGeneratorOptions().SetExactLength(8).IsValid(password));
+        var control = new PasswordGeneratorOptions().SetExactLength(8);
+        var controlResult = control.IsValid(password);
+
+        Assert.True(controlResult);
 
         var options = new PasswordGeneratorOptions().SetExactLength(8).SetExcludedCharacters("x");
 
@@ -164,7 +167,9 @@ public class PasswordGeneratorOptionsTests : BaseTests
     {
         var special = new PasswordGeneratorOptions().SpecialCharacters;
 
-        Assert.Equal(special.Length, new HashSet<char>(special).Count);
+        var distinctCount = new HashSet<char>(special).Count;
+
+        Assert.Equal(special.Length, distinctCount);
     }
 
     [Fact]
@@ -181,7 +186,9 @@ public class PasswordGeneratorOptionsTests : BaseTests
         var options = new PasswordGeneratorOptions()
             .SetExcludedCharacters(PasswordGeneratorOptions.AmbiguousCharacters);
 
-        Assert.Empty(options.CharacterSet.Intersect(PasswordGeneratorOptions.AmbiguousCharacters));
+        var ambiguous = options.CharacterSet.Intersect(PasswordGeneratorOptions.AmbiguousCharacters);
+
+        Assert.Empty(ambiguous);
         Assert.Equal(85, options.CharacterSet.Length);
     }
 

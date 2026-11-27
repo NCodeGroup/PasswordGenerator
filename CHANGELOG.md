@@ -12,6 +12,8 @@ The format is based on [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.
 - Every pack validates the package against the last published version, 1.0.1, so a change that breaks its public API fails the build.
 - The package declares itself trim- and Native AOT-compatible (`IsAotCompatible`), so the build reports any change that would break a trimmed or AOT-compiled app. ([#24](https://github.com/NCodeGroup/PasswordGenerator/issues/24))
 - `IPasswordGenerator.GeneratePinned` returns a password in a buffer on the pinned object heap, which the garbage collector never copies, and zeroes it when disposed, so an application can clear a password after use; the overloads take the default options, a callback that adjusts them, or options passed in. An `IPasswordGenerator` implemented outside the library throws `NotSupportedException` from them until it overrides them. ([#37](https://github.com/NCodeGroup/PasswordGenerator/issues/37), [ADR-1001](docs/decisions/1001-pinned-password-buffers-are-default-interface-members.md))
+- `PasswordGeneratorOptions.ExcludedCharacters` and `SetExcludedCharacters` keep the characters they list out of every character class, so no generated password contains them, and `IsValid` rejects a password that holds one; `PasswordGeneratorOptions.AmbiguousCharacters` is `0O1Il|`, the look-alike characters to pass to it. Generating with a minimum above zero for a class whose characters are all excluded throws `ArgumentException`.
+- `PasswordGeneratorOptions.EstimateEntropyBits(int length)` estimates the strength, in bits, of a password of that length generated with the options: the length times the base-2 logarithm of the number of distinct characters in `CharacterSet`, an upper bound, since the minimum counts and the run limit narrow the choices.
 
 ### Changed
 
@@ -25,6 +27,7 @@ The format is based on [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.
 - Each release is tagged, published as a GitHub release and pushed to nuget.org as its pull request merges into `main`: `AGENTS.md`'s Landing section sets `release: tag+release`, so `.github/workflows/tag-release.yml` tags the version of the changelog's newest section and starts `.github/workflows/publish.yml`.
 - Every C# file starts with the two-line SPDX header, `// Copyright © NCode Group` and `// SPDX-License-Identifier: Apache-2.0`, and the Rider settings generate it. ([#38](https://github.com/NCodeGroup/PasswordGenerator/issues/38))
 - The solution is `NCode.PasswordGenerator.slnx`, the build settings the project template already makes are no longer repeated, and no file starts with a UTF-8 byte order mark; the package's contents, Source Link and symbols are unchanged. ([#30](https://github.com/NCodeGroup/PasswordGenerator/issues/30))
+- **Breaking:** `AddPasswordGenerator` validates the options when the host starts, and when `IOptions<PasswordGeneratorOptions>` is first read, and throws `OptionsValidationException` naming each problem for options that can't generate a password: every minimum count at zero, `MinLength` below 1, minimum counts that add up to more than `MaxLength`, `MaxAttempts` or `MaxConsecutiveIdenticalCharacters` below 1, or a character class with a minimum above zero and no character left to choose from. Fix the options it names; such a host otherwise failed when it generated a password. ([ADR-1002](docs/decisions/1002-password-generator-options-are-validated-when-the-host-starts.md))
 
 ### Removed
 
@@ -37,6 +40,7 @@ The format is based on [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.
 - The `Span<char>` overloads of `Generate` clear the caller's buffer before they throw `InvalidOperationException` ("Too many attempts."), so the last rejected attempt isn't left in it. ([#36](https://github.com/NCodeGroup/PasswordGenerator/issues/36))
 - The documentation of `IPasswordGenerator` says enumerating it yields `MaxEnumerations` passwords, 100 by default, instead of an infinite sequence. ([#29](https://github.com/NCodeGroup/PasswordGenerator/issues/29))
 - **Breaking:** The `Generate` overloads that return a `string` throw `InvalidOperationException` ("The requested password length is too small.") when the length drawn from the options is 0 or less, instead of returning an empty string that was never validated (a length of 0) or throwing `ArgumentOutOfRangeException` (a negative length); `GeneratePinned` does the same. Keep `MinLength` at 1 or more, or catch `InvalidOperationException`. ([#28](https://github.com/NCodeGroup/PasswordGenerator/issues/28))
+- The default special characters hold `;` once instead of twice, so `;` is no more likely than any other special character; the default set of characters is unchanged.
 
 ## [1.0.1] - 2023-07-16
 

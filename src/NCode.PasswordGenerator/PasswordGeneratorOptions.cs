@@ -359,6 +359,11 @@ public class PasswordGeneratorOptions
         return this;
     }
 
+    /// <summary>
+    /// Removes the <see cref="ExcludedCharacters"/> from the specified characters.
+    /// </summary>
+    /// <param name="characters">The characters to filter.</param>
+    /// <returns>The characters that aren't excluded, in their original order, or <paramref name="characters"/> itself when nothing is excluded.</returns>
     private string RemoveExcluded(string characters)
     {
         var excluded = ExcludedCharacters;

@@ -128,12 +128,18 @@ public class PasswordGeneratorOptionsTests : BaseTests
     }
 
     [Fact]
-    public void SetLengthRange_GivenInvalid_ThenThrows()
+    public void SetLengthRange_GivenMinLengthGreaterThanMaxLength_ThenThrowsArgumentOutOfRangeException()
     {
         var options = new PasswordGeneratorOptions();
 
-        Assert.Throws<InvalidOperationException>(() =>
+        var exception = Assert.Throws<ArgumentOutOfRangeException>(() =>
             options.SetLengthRange(7, 5));
+
+        Assert.Equal("minLength", exception.ParamName);
+        Assert.Equal(7, exception.ActualValue);
+        Assert.StartsWith("minLength cannot be greater than maxLength.", exception.Message);
+        Assert.Equal(16, options.MinLength);
+        Assert.Equal(64, options.MaxLength);
     }
 
     [Fact]

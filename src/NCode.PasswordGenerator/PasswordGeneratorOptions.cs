@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 using System.Buffers;
+using System.Globalization;
 using System.Text;
 
 namespace NCode.PasswordGenerator;
@@ -468,5 +469,43 @@ public class PasswordGeneratorOptions
                countNumeric >= MinNumericCharacters &&
                countLowercase >= MinLowercaseCharacters &&
                countUppercase >= MinUppercaseCharacters;
+    }
+
+    /// <summary>
+    /// Gets a message for each rule these options break that makes generating a password always or randomly fail.
+    /// </summary>
+    /// <returns>The messages in rule order, or an empty list when the options can generate a password.</returns>
+    internal IReadOnlyList<string> GetConfigurationErrors()
+    {
+        var errors = new List<string>();
+        var sum = MinSpecialCharacters + MinNumericCharacters + MinLowercaseCharacters + MinUppercaseCharacters;
+
+        if (sum == 0)
+            errors.Add("At least one character set must have a minimum greater than zero.");
+
+        if (MinLength < 1)
+            errors.Add(string.Create(CultureInfo.InvariantCulture, $"MinLength must be at least 1, but is {MinLength}."));
+
+        if (sum > MaxLength)
+            errors.Add(string.Create(CultureInfo.InvariantCulture, $"The minimum character counts add up to {sum}, more than MaxLength ({MaxLength})."));
+
+        if (MaxAttempts < 1)
+            errors.Add(string.Create(CultureInfo.InvariantCulture, $"MaxAttempts must be at least 1, but is {MaxAttempts}."));
+
+        if (MaxConsecutiveIdenticalCharacters < 1)
+            errors.Add(string.Create(CultureInfo.InvariantCulture, $"MaxConsecutiveIdenticalCharacters must be at least 1, but is {MaxConsecutiveIdenticalCharacters}."));
+
+        AddEmptyClassError(errors, nameof(MinLowercaseCharacters), MinLowercaseCharacters, AllowedLowercaseCharacters, "lowercase");
+        AddEmptyClassError(errors, nameof(MinUppercaseCharacters), MinUppercaseCharacters, AllowedUppercaseCharacters, "uppercase");
+        AddEmptyClassError(errors, nameof(MinNumericCharacters), MinNumericCharacters, AllowedNumericCharacters, "numeric");
+        AddEmptyClassError(errors, nameof(MinSpecialCharacters), MinSpecialCharacters, AllowedSpecialCharacters, "special");
+
+        return errors;
+    }
+
+    private static void AddEmptyClassError(List<string> errors, string name, int minimum, string allowed, string kind)
+    {
+        if (minimum > 0 && allowed.Length == 0)
+            errors.Add(string.Create(CultureInfo.InvariantCulture, $"{name} is {minimum}, but no {kind} character is left to choose from."));
     }
 }

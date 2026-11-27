@@ -34,7 +34,7 @@ produce a password when it runs.
 - A caller handles a rejected length the same way whichever member rejects it: it catches
   `ArgumentOutOfRangeException` and reads `ParamName` and `ActualValue`. The changelog lists the exception type of
   `SetLengthRange` as a breaking change in 2.0.0.
-- A new option member that rejects a value follows the same rule.
+- Every member of `PasswordGeneratorOptions` that rejects a value follows the same rule.
 
 ## References
 

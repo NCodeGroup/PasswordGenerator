@@ -41,6 +41,6 @@ How `/ship-plan` lands a reviewed plan. `integrate`: `pull-request` pushes the p
 ## Conventions
 
 - A change to the public API is recorded with `./build/Update-PublicApi.ps1` in the same pull request.
-- Packages are published from a GitHub release by `.github/workflows/publish.yml` through nuget.org trusted publishing, once the one-time setup its header describes is done.
+- Packages are published from a GitHub release by `.github/workflows/publish.yml` through nuget.org trusted publishing, after a maintainer approves its `nuget` environment. The one-time setup its header describes is done ([#40](https://github.com/NCodeGroup/PasswordGenerator/issues/40)): the `NUGET_USER` variable comes from the NCodeGroup organization, so the repository sets none of its own.
 - A release's version comes from `version.json` (ADR-0138 in `docs/decisions/project-template/`): set its `version` to the release's version before publishing the release, since the `pack` job of `.github/workflows/publish.yml` fails a release whose packages carry another version.
 - This repository keeps project-template ADR-0006's exception, confirmed in [#31](https://github.com/NCodeGroup/PasswordGenerator/issues/31): `.github/workflows/code-review-auto-merge.yml` auto-merges Dependabot's NCode Review pin bumps (minor and patch only). The template owns that workflow and its updates restore it, so dropping the exception takes a decision record in `docs/decisions/` that supersedes project-template ADR-0006's exception for this repository, and this line's removal.

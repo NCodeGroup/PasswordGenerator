@@ -110,6 +110,8 @@ public class PasswordGeneratorOptionsValidatorTests : BaseTests
     [Fact]
     public void Validate_WhenSeveralRulesBroken_ThenReportsEach()
     {
+        const string maxAttemptsMessage = "MaxAttempts must be at least 1, but is 0.";
+        const string maxConsecutiveMessage = "MaxConsecutiveIdenticalCharacters must be at least 1, but is 0.";
         var options = new PasswordGeneratorOptions
         {
             MaxAttempts = 0,
@@ -122,6 +124,8 @@ public class PasswordGeneratorOptionsValidatorTests : BaseTests
         Assert.NotNull(result.Failures);
         var failureCount = result.Failures.Count();
         Assert.Equal(2, failureCount);
+        Assert.Contains(maxAttemptsMessage, result.Failures);
+        Assert.Contains(maxConsecutiveMessage, result.Failures);
     }
 
     #endregion

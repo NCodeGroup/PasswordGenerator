@@ -206,10 +206,11 @@ public class PasswordGeneratorOptions
     /// </summary>
     /// <param name="minLength">The minimum length for generated passwords.</param>
     /// <param name="maxLength">The maximum length for generated passwords.</param>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="minLength"/> is greater than <paramref name="maxLength"/>.</exception>
     public PasswordGeneratorOptions SetLengthRange(int minLength, int maxLength)
     {
         if (minLength > maxLength)
-            throw new InvalidOperationException();
+            throw new ArgumentOutOfRangeException(nameof(minLength), minLength, "minLength cannot be greater than maxLength.");
 
         _minLength = minLength;
         _maxLength = maxLength;

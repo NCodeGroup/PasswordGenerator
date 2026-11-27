@@ -484,16 +484,16 @@ public class PasswordGeneratorOptions
             errors.Add("At least one character set must have a minimum greater than zero.");
 
         if (MinLength < 1)
-            errors.Add(string.Create(CultureInfo.InvariantCulture, $"MinLength must be at least 1, but is {MinLength}."));
+            AddError(errors, $"MinLength must be at least 1, but is {MinLength}.");
 
         if (sum > MaxLength)
-            errors.Add(string.Create(CultureInfo.InvariantCulture, $"The minimum character counts add up to {sum}, more than MaxLength ({MaxLength})."));
+            AddError(errors, $"The minimum character counts add up to {sum}, more than MaxLength ({MaxLength}).");
 
         if (MaxAttempts < 1)
-            errors.Add(string.Create(CultureInfo.InvariantCulture, $"MaxAttempts must be at least 1, but is {MaxAttempts}."));
+            AddError(errors, $"MaxAttempts must be at least 1, but is {MaxAttempts}.");
 
         if (MaxConsecutiveIdenticalCharacters < 1)
-            errors.Add(string.Create(CultureInfo.InvariantCulture, $"MaxConsecutiveIdenticalCharacters must be at least 1, but is {MaxConsecutiveIdenticalCharacters}."));
+            AddError(errors, $"MaxConsecutiveIdenticalCharacters must be at least 1, but is {MaxConsecutiveIdenticalCharacters}.");
 
         AddEmptyClassError(errors, nameof(MinLowercaseCharacters), MinLowercaseCharacters, AllowedLowercaseCharacters, "lowercase");
         AddEmptyClassError(errors, nameof(MinUppercaseCharacters), MinUppercaseCharacters, AllowedUppercaseCharacters, "uppercase");
@@ -506,6 +506,17 @@ public class PasswordGeneratorOptions
     private static void AddEmptyClassError(List<string> errors, string name, int minimum, string allowed, string kind)
     {
         if (minimum > 0 && allowed.Length == 0)
-            errors.Add(string.Create(CultureInfo.InvariantCulture, $"{name} is {minimum}, but no {kind} character is left to choose from."));
+            AddError(errors, $"{name} is {minimum}, but no {kind} character is left to choose from.");
+    }
+
+    /// <summary>
+    /// Adds a message to the list, formatted with the invariant culture.
+    /// </summary>
+    /// <param name="errors">The list to add the message to.</param>
+    /// <param name="message">The message to format and add.</param>
+    private static void AddError(List<string> errors, FormattableString message)
+    {
+        var text = message.ToString(CultureInfo.InvariantCulture);
+        errors.Add(text);
     }
 }

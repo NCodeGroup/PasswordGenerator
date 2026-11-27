@@ -37,7 +37,8 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddPasswordGenerator(this IServiceCollection services, Action<PasswordGeneratorOptions> configureOptions)
     {
         services.TryAdd(ServiceDescriptor.Singleton<IPasswordGenerator, PasswordGenerator>());
-        services.TryAddEnumerable(ServiceDescriptor.Singleton<IValidateOptions<PasswordGeneratorOptions>, PasswordGeneratorOptionsValidator>());
+        var validator = ServiceDescriptor.Singleton<IValidateOptions<PasswordGeneratorOptions>, PasswordGeneratorOptionsValidator>();
+        services.TryAddEnumerable(validator);
         services.AddOptions<PasswordGeneratorOptions>().Configure(configureOptions).ValidateOnStart();
         return services;
     }

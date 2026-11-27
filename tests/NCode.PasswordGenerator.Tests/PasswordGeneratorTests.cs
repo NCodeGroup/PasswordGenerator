@@ -207,6 +207,43 @@ public class PasswordGeneratorTests : BaseTests
     }
 
     [Fact]
+    public void Generate_WhenAmbiguousCharactersExcluded_ThenEveryAttemptOmitsThem()
+    {
+        var options = new PasswordGeneratorOptions
+        {
+            MaxAttempts = 1,
+            MaxConsecutiveIdenticalCharacters = 64,
+        };
+
+        options.SetExcludedCharacters(PasswordGeneratorOptions.AmbiguousCharacters);
+
+        for (var i = 0; i < 100; ++i)
+        {
+            var password = PasswordGenerator.Default.Generate(options);
+
+            var ambiguous = password.Intersect(PasswordGeneratorOptions.AmbiguousCharacters);
+
+            Assert.Empty(ambiguous);
+        }
+    }
+
+    [Fact]
+    public void Generate_WhenRequiredClassFullyExcluded_ThenThrowsArgumentException()
+    {
+        var options = new PasswordGeneratorOptions
+        {
+            MaxAttempts = 1,
+        };
+
+        options.SetExcludedCharacters("abcdefghijklmnopqrstuvwxyz");
+
+        var exception = Assert.Throws<ArgumentException>(() =>
+            PasswordGenerator.Default.Generate(options));
+
+        Assert.Equal("choices", exception.ParamName);
+    }
+
+    [Fact]
     public void Generate_GivenNegativeMinimumAndUnreachableMinimum_ThenTooManyAttempts()
     {
         var options = new PasswordGeneratorOptions

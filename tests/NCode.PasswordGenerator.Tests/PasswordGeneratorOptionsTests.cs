@@ -99,6 +99,35 @@ public class PasswordGeneratorOptionsTests : BaseTests
     }
 
     [Fact]
+    public void IsValid_WhenPasswordContainsExcludedCharacter_ThenFalse()
+    {
+        const string password = "aB3!xY7#";
+
+        var control = new PasswordGeneratorOptions().SetExactLength(8);
+        var controlResult = control.IsValid(password);
+
+        Assert.True(controlResult);
+
+        var options = new PasswordGeneratorOptions().SetExactLength(8).SetExcludedCharacters("x");
+
+        var result = options.IsValid(password);
+
+        Assert.False(result);
+    }
+
+    [Fact]
+    public void IsValid_WhenNothingExcluded_ThenSamePasswordIsTrue()
+    {
+        const string password = "aB3!xY7#";
+
+        var options = new PasswordGeneratorOptions().SetExactLength(8);
+
+        var result = options.IsValid(password);
+
+        Assert.True(result);
+    }
+
+    [Fact]
     public void SetLengthRange_GivenInvalid_ThenThrows()
     {
         var options = new PasswordGeneratorOptions();
@@ -130,7 +159,75 @@ public class PasswordGeneratorOptionsTests : BaseTests
         Assert.Equal("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", options.CharacterSet);
 
         options.MinSpecialCharacters = 1;
-        Assert.Equal("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!;#$%&()*+,-./:;<=>?@[]^_`{|}~", options.CharacterSet);
+        Assert.Equal("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!#$%&()*+,-./:;<=>?@[]^_`{|}~", options.CharacterSet);
+    }
+
+    [Fact]
+    public void SpecialCharacters_Default_HasNoDuplicateCharacters()
+    {
+        var special = new PasswordGeneratorOptions().SpecialCharacters;
+
+        var distinctCount = new HashSet<char>(special).Count;
+
+        Assert.Equal(special.Length, distinctCount);
+    }
+
+    [Fact]
+    public void ExcludedCharacters_Default_IsEmpty()
+    {
+        var options = new PasswordGeneratorOptions();
+
+        Assert.Empty(options.ExcludedCharacters);
+    }
+
+    [Fact]
+    public void CharacterSet_WhenAmbiguousCharactersExcluded_ThenOmitsThem()
+    {
+        var options = new PasswordGeneratorOptions()
+            .SetExcludedCharacters(PasswordGeneratorOptions.AmbiguousCharacters);
+
+        var ambiguous = options.CharacterSet.Intersect(PasswordGeneratorOptions.AmbiguousCharacters);
+
+        Assert.Empty(ambiguous);
+        Assert.Equal(85, options.CharacterSet.Length);
+    }
+
+    [Fact]
+    public void Clone_CopiesExcludedCharacters()
+    {
+        const string excluded = "xyz";
+
+        var options = new PasswordGeneratorOptions().SetExcludedCharacters(excluded);
+
+        var clone = options.Clone();
+
+        Assert.Equal(excluded, clone.ExcludedCharacters);
+    }
+
+    [Fact]
+    public void Reset_ClearsExcludedCharacters()
+    {
+        var options = new PasswordGeneratorOptions().SetExcludedCharacters("xyz");
+
+        options.Reset();
+
+        Assert.Empty(options.ExcludedCharacters);
+    }
+
+    [Fact]
+    public void MinimumCharacterCount_GivenEachMinimum_ThenSumsThem()
+    {
+        var options = new PasswordGeneratorOptions
+        {
+            MinLowercaseCharacters = 1,
+            MinUppercaseCharacters = 2,
+            MinNumericCharacters = 3,
+            MinSpecialCharacters = 4,
+        };
+
+        var count = options.MinimumCharacterCount;
+
+        Assert.Equal(10, count);
     }
 
     [Theory]
@@ -256,5 +353,57 @@ public class PasswordGeneratorOptionsTests : BaseTests
             "aaa",
             false
         };
+    }
+
+    [Fact]
+    public void EstimateEntropyBits_GivenDefaultOptions_ThenUsesDistinctCharacters()
+    {
+        var options = new PasswordGeneratorOptions();
+
+        var bits = options.EstimateEntropyBits(16);
+        var expected = 16 * Math.Log2(91);
+
+        Assert.Equal(expected, bits, 10);
+    }
+
+    [Fact]
+    public void EstimateEntropyBits_WhenAmbiguousDigitsExcluded_ThenCountsRemainingDigits()
+    {
+        var options = new PasswordGeneratorOptions
+        {
+            MinLowercaseCharacters = 0,
+            MinUppercaseCharacters = 0,
+            MinNumericCharacters = 1,
+            MinSpecialCharacters = 0,
+        };
+        options.SetExcludedCharacters(PasswordGeneratorOptions.AmbiguousCharacters);
+
+        var bits = options.EstimateEntropyBits(4);
+
+        Assert.Equal(12.0, bits, 10);
+    }
+
+    [Fact]
+    public void EstimateEntropyBits_WhenCharacterSetEmpty_ThenZero()
+    {
+        var options = new PasswordGeneratorOptions
+        {
+            MinLowercaseCharacters = 0,
+            MinUppercaseCharacters = 0,
+            MinNumericCharacters = 0,
+            MinSpecialCharacters = 0,
+        };
+
+        var bits = options.EstimateEntropyBits(16);
+
+        Assert.Equal(0.0, bits);
+    }
+
+    [Fact]
+    public void EstimateEntropyBits_GivenNegativeLength_ThenThrows()
+    {
+        var options = new PasswordGeneratorOptions();
+
+        Assert.Throws<ArgumentOutOfRangeException>(() => options.EstimateEntropyBits(-1));
     }
 }

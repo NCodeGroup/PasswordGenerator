@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 using System.Buffers;
+using System.Globalization;
+using System.Text;
 
 namespace NCode.PasswordGenerator;
 
@@ -24,7 +26,36 @@ public class PasswordGeneratorOptions
     internal const string LowercaseCharacters = "abcdefghijklmnopqrstuvwxyz";
     internal const string UppercaseCharacters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     internal const string NumericCharacters = "0123456789";
-    private const string DefaultSpecialCharacters = "!;#$%&()*+,-./:;<=>?@[]^_`{|}~";
+    private const string DefaultSpecialCharacters = "!#$%&()*+,-./:;<=>?@[]^_`{|}~";
+
+    /// <summary>
+    /// The look-alike characters of the default character sets, to pass to <see cref="SetExcludedCharacters"/>.
+    /// </summary>
+    public const string AmbiguousCharacters = "0O1Il|";
+
+    private static bool AreIdentical(ReadOnlySpan<char> slice)
+    {
+        var prev = slice[0];
+
+        foreach (var c in slice[1..])
+        {
+            if (c != prev) return false;
+            prev = c;
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// Adds a message to the list, formatted with the invariant culture.
+    /// </summary>
+    /// <param name="errors">The list to add the message to.</param>
+    /// <param name="message">The message to format and add.</param>
+    private static void AddError(List<string> errors, FormattableString message)
+    {
+        var text = message.ToString(CultureInfo.InvariantCulture);
+        errors.Add(text);
+    }
 
     private int _minLength = DefaultMinLength;
     private int _maxLength = DefaultMaxLength;
@@ -49,6 +80,7 @@ public class PasswordGeneratorOptions
         MinNumericCharacters = other.MinNumericCharacters;
         MinSpecialCharacters = other.MinSpecialCharacters;
         SpecialOrNull = other.SpecialOrNull;
+        ExcludedOrNull = other.ExcludedOrNull;
     }
 
     /// <summary>
@@ -66,6 +98,7 @@ public class PasswordGeneratorOptions
         MinNumericCharacters = DefaultMinNumericCharacters;
         MinSpecialCharacters = DefaultMinSpecialCharacters;
         SpecialOrNull = null;
+        ExcludedOrNull = null;
         return this;
     }
 
@@ -254,6 +287,13 @@ public class PasswordGeneratorOptions
         return this;
     }
 
+    /// <summary>
+    /// Gets the sum of <see cref="MinLowercaseCharacters"/>, <see cref="MinUppercaseCharacters"/>,
+    /// <see cref="MinNumericCharacters"/> and <see cref="MinSpecialCharacters"/>.
+    /// </summary>
+    internal int MinimumCharacterCount =>
+        MinSpecialCharacters + MinNumericCharacters + MinLowercaseCharacters + MinUppercaseCharacters;
+
     private string? SpecialOrNull { get; set; }
 
     /// <summary>
@@ -299,19 +339,99 @@ public class PasswordGeneratorOptions
         return this;
     }
 
+    private string? ExcludedOrNull { get; set; }
+
     /// <summary>
-    /// Gets a <see cref="string"/> containing the allowable characters in a password.
+    /// Gets or sets the characters that are left out of every character class and never appear in a generated password.
+    /// </summary>
+    public string ExcludedCharacters
+    {
+        get => ExcludedOrNull ?? string.Empty;
+        set => ExcludedOrNull = value;
+    }
+
+    /// <summary>
+    /// Sets the characters that are left out of every character class and never appear in a generated password.
+    /// </summary>
+    public PasswordGeneratorOptions SetExcludedCharacters(string value)
+    {
+        ExcludedCharacters = value;
+        return this;
+    }
+
+    /// <summary>
+    /// Removes the <see cref="ExcludedCharacters"/> from the specified characters.
+    /// </summary>
+    /// <param name="characters">The characters to filter.</param>
+    /// <returns>The characters that aren't excluded, in their original order, or <paramref name="characters"/> itself when nothing is excluded.</returns>
+    private string RemoveExcluded(string characters)
+    {
+        var excluded = ExcludedCharacters;
+        if (excluded.Length == 0)
+            return characters;
+
+        var builder = new StringBuilder(characters.Length);
+        foreach (var c in characters)
+        {
+            if (!excluded.Contains(c))
+                builder.Append(c);
+        }
+
+        return builder.ToString();
+    }
+
+    /// <summary>
+    /// Gets the lower-case characters that are left after removing <see cref="ExcludedCharacters"/>.
+    /// </summary>
+    internal string AllowedLowercaseCharacters => RemoveExcluded(LowercaseCharacters);
+
+    /// <summary>
+    /// Gets the upper-case characters that are left after removing <see cref="ExcludedCharacters"/>.
+    /// </summary>
+    internal string AllowedUppercaseCharacters => RemoveExcluded(UppercaseCharacters);
+
+    /// <summary>
+    /// Gets the numeric characters that are left after removing <see cref="ExcludedCharacters"/>.
+    /// </summary>
+    internal string AllowedNumericCharacters => RemoveExcluded(NumericCharacters);
+
+    /// <summary>
+    /// Gets the special characters that are left after removing <see cref="ExcludedCharacters"/>.
+    /// </summary>
+    internal string AllowedSpecialCharacters => RemoveExcluded(SpecialCharacters);
+
+    /// <summary>
+    /// Gets a <see cref="string"/> containing the allowable characters in a password, without the
+    /// <see cref="ExcludedCharacters"/>.
     /// </summary>
     public string CharacterSet
     {
         get
         {
-            var lowercase = MinLowercaseCharacters > 0 ? LowercaseCharacters : string.Empty;
-            var uppercase = MinUppercaseCharacters > 0 ? UppercaseCharacters : string.Empty;
-            var numeric = MinNumericCharacters > 0 ? NumericCharacters : string.Empty;
-            var special = MinSpecialCharacters > 0 ? SpecialCharacters : string.Empty;
+            var lowercase = MinLowercaseCharacters > 0 ? AllowedLowercaseCharacters : string.Empty;
+            var uppercase = MinUppercaseCharacters > 0 ? AllowedUppercaseCharacters : string.Empty;
+            var numeric = MinNumericCharacters > 0 ? AllowedNumericCharacters : string.Empty;
+            var special = MinSpecialCharacters > 0 ? AllowedSpecialCharacters : string.Empty;
             return string.Concat(lowercase, uppercase, numeric, special);
         }
+    }
+
+    /// <summary>
+    /// Estimates the entropy, in bits, of a password of <paramref name="length"/> characters generated with these options,
+    /// as the length times the base-2 logarithm of the number of distinct characters in <see cref="CharacterSet"/>.
+    /// </summary>
+    /// <remarks>
+    /// The estimate is an upper bound, because the minimum counts and the limit on consecutive identical characters
+    /// narrow the passwords that can be generated.
+    /// </remarks>
+    /// <param name="length">The number of characters in the password.</param>
+    /// <returns>The estimated entropy in bits, or <c>0</c> when <see cref="CharacterSet"/> is empty.</returns>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="length"/> is negative.</exception>
+    public double EstimateEntropyBits(int length)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(length);
+        var count = new HashSet<char>(CharacterSet).Count;
+        return count == 0 ? 0 : length * Math.Log2(count);
     }
 
     internal bool AreIdentical(int i, ReadOnlySpan<char> password)
@@ -320,22 +440,10 @@ public class PasswordGeneratorOptions
         return i >= maxConsecutive && AreIdentical(password.Slice(i - maxConsecutive, maxConsecutive + 1));
     }
 
-    private static bool AreIdentical(ReadOnlySpan<char> slice)
-    {
-        var prev = slice[0];
-
-        foreach (var c in slice[1..])
-        {
-            if (c != prev) return false;
-            prev = c;
-        }
-
-        return true;
-    }
-
     /// <summary>
     /// Returns <c>true</c> or <c>false</c> whether the specified <paramref name="password"/> is valid according to configured
     /// rules on the current <see cref="PasswordGeneratorOptions"/> instance.
+    /// A password that contains an excluded character (see <see cref="ExcludedCharacters"/>) is invalid.
     /// </summary>
     /// <param name="password">The password to check.</param>
     /// <returns><c>true</c> is the password is valid; otherwise, <c>false</c>.</returns>
@@ -343,6 +451,7 @@ public class PasswordGeneratorOptions
     {
         if (password.Length < MinLength) return false;
         if (password.Length > MaxLength) return false;
+        if (password.ContainsAny(ExcludedCharacters)) return false;
 
         var countSpecial = 0;
         var countNumeric = 0;
@@ -383,5 +492,44 @@ public class PasswordGeneratorOptions
                countNumeric >= MinNumericCharacters &&
                countLowercase >= MinLowercaseCharacters &&
                countUppercase >= MinUppercaseCharacters;
+    }
+
+    /// <summary>
+    /// Gets a message for each rule these options break that makes generating a password always or randomly fail.
+    /// </summary>
+    /// <returns>The messages in rule order, or an empty list when the options can generate a password.</returns>
+    internal IReadOnlyList<string> GetConfigurationErrors()
+    {
+        var errors = new List<string>();
+        var sum = MinimumCharacterCount;
+
+        if (sum == 0)
+            errors.Add("At least one character set must have a minimum greater than zero.");
+
+        if (MinLength < 1)
+            AddError(errors, $"MinLength must be at least 1, but is {MinLength}.");
+
+        if (sum > MaxLength)
+            AddError(errors, $"The minimum character counts add up to {sum}, more than MaxLength ({MaxLength}).");
+
+        if (MaxAttempts < 1)
+            AddError(errors, $"MaxAttempts must be at least 1, but is {MaxAttempts}.");
+
+        if (MaxConsecutiveIdenticalCharacters < 1)
+            AddError(errors, $"MaxConsecutiveIdenticalCharacters must be at least 1, but is {MaxConsecutiveIdenticalCharacters}.");
+
+        if (MinLowercaseCharacters > 0 && AllowedLowercaseCharacters.Length == 0)
+            AddError(errors, $"{nameof(MinLowercaseCharacters)} is {MinLowercaseCharacters}, but no lowercase character is left to choose from.");
+
+        if (MinUppercaseCharacters > 0 && AllowedUppercaseCharacters.Length == 0)
+            AddError(errors, $"{nameof(MinUppercaseCharacters)} is {MinUppercaseCharacters}, but no uppercase character is left to choose from.");
+
+        if (MinNumericCharacters > 0 && AllowedNumericCharacters.Length == 0)
+            AddError(errors, $"{nameof(MinNumericCharacters)} is {MinNumericCharacters}, but no numeric character is left to choose from.");
+
+        if (MinSpecialCharacters > 0 && AllowedSpecialCharacters.Length == 0)
+            AddError(errors, $"{nameof(MinSpecialCharacters)} is {MinSpecialCharacters}, but no special character is left to choose from.");
+
+        return errors;
     }
 }

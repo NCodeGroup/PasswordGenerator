@@ -22,7 +22,7 @@ Once in each clone, run `git config core.hooksPath .githooks`. It turns on `.git
 | The local gate before a push | `./build/dod.ps1 -Fast` |
 | Only the tests a filter matches | `./build/dod.ps1 -Fast -Filter 'FullyQualifiedName~OrderStore'` |
 
-The Definition of Done checks the decision index, builds in Release with warnings as errors, runs the tests, packs and ends with `Definition of Done: PASSED`. CI runs `./build/dod.ps1` on every pull request.
+The Definition of Done checks the decision index, builds in Release with warnings as errors, runs the tests, packs and ends with `Definition of Done: PASSED`. CI runs `./build/dod.ps1` on every pull request, and `./.template/Test-FileHeaders.ps1`, which fails on a source file without the copyright and SPDX license lines; `./.template/Test-FileHeaders.ps1 -Fix` adds them.
 
 ## Make a Change
 

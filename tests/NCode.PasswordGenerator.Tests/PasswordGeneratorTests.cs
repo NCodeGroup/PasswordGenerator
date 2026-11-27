@@ -1,19 +1,7 @@
-﻿#region Copyright Preamble
-// 
-//    Copyright @ 2023 NCode Group
-// 
-//    Licensed under the Apache License, Version 2.0 (the "License");
-//    you may not use this file except in compliance with the License.
-//    You may obtain a copy of the License at
-// 
-//        http://www.apache.org/licenses/LICENSE-2.0
-// 
-//    Unless required by applicable law or agreed to in writing, software
-//    distributed under the License is distributed on an "AS IS" BASIS,
-//    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//    See the License for the specific language governing permissions and
-//    limitations under the License.
-#endregion
+// Copyright © NCode Group
+// SPDX-License-Identifier: Apache-2.0
+
+using System.Collections;
 
 namespace NCode.PasswordGenerator.Tests;
 
@@ -239,6 +227,64 @@ public class PasswordGeneratorTests : BaseTests
     }
 
     [Fact]
+    public void Generate_GivenExactLengthZero_ThenThrows()
+    {
+        DefaultOptions.SetExactLength(0);
+
+        var exception = Assert.Throws<InvalidOperationException>(() =>
+            PasswordGenerator.Generate(DefaultOptions));
+
+        Assert.Equal("The requested password length is too small.", exception.Message);
+    }
+
+    [Fact]
+    public void Generate_GivenRangeFromZero_WhenZeroDrawn_ThenThrows()
+    {
+        DefaultOptions.SetLengthRange(0, 10);
+
+        MockPasswordGenerator
+            .Setup(x => x.GetRandomInt32(0, 11))
+            .Returns(0)
+            .Verifiable();
+
+        var exception = Assert.Throws<InvalidOperationException>(() =>
+            PasswordGenerator.Generate(DefaultOptions));
+
+        Assert.Equal("The requested password length is too small.", exception.Message);
+    }
+
+    [Fact]
+    public void Generate_GivenNegativeExactLength_ThenThrows()
+    {
+        DefaultOptions.SetExactLength(-1);
+
+        var exception = Assert.Throws<InvalidOperationException>(() =>
+            PasswordGenerator.Generate(DefaultOptions));
+
+        Assert.Equal("The requested password length is too small.", exception.Message);
+    }
+
+    [Fact]
+    public void Generate_GivenSpan_WhenTooManyAttempts_ThenCleared()
+    {
+        DefaultOptions.MaxAttempts = 3;
+        DefaultOptions.SetExactLength(8);
+
+        bool? isValidResult = false;
+        MockPasswordGenerator
+            .Setup(x => x.SkipIsValid(out isValidResult))
+            .Returns(true)
+            .Verifiable();
+
+        var password = new char[8];
+        var exception = Assert.Throws<InvalidOperationException>(() =>
+            PasswordGenerator.Generate(DefaultOptions, password));
+
+        Assert.Equal("Too many attempts.", exception.Message);
+        Assert.All(password, c => Assert.Equal('\0', c));
+    }
+
+    [Fact]
     public void GetLength_GivenEqualMinMax_ThenSame()
     {
         const int length = 7;
@@ -290,5 +336,104 @@ public class PasswordGeneratorTests : BaseTests
         DefaultOptions.MaxEnumerations = count;
         var passwords = PasswordGenerator.ToList();
         Assert.Equal(count, passwords.Count);
+    }
+
+    #region GeneratePinned Tests
+
+    [Fact]
+    public void GeneratePinned_Valid()
+    {
+        using var password = PasswordGenerator.GeneratePinned();
+
+        var isValid = DefaultOptions.IsValid(password.Memory.Span);
+        Assert.True(isValid);
+    }
+
+    [Fact]
+    public void GeneratePinned_GivenConfigurator_ThenConfiguredLength()
+    {
+        using var password = PasswordGenerator.GeneratePinned(options => options.SetExactLength(20));
+
+        Assert.Equal(20, password.Memory.Length);
+    }
+
+    [Fact]
+    public void GeneratePinned_GivenOptions_ThenValid()
+    {
+        DefaultOptions.SetLengthRange(16, 32);
+
+        using var password = PasswordGenerator.GeneratePinned(DefaultOptions);
+
+        Assert.InRange(password.Memory.Length, 16, 32);
+
+        var isValid = DefaultOptions.IsValid(password.Memory.Span);
+        Assert.True(isValid);
+    }
+
+    [Fact]
+    public void GeneratePinned_GivenExactLengthZero_ThenThrows()
+    {
+        DefaultOptions.SetExactLength(0);
+
+        var exception = Assert.Throws<InvalidOperationException>(() =>
+            PasswordGenerator.GeneratePinned(DefaultOptions));
+
+        Assert.Equal("The requested password length is too small.", exception.Message);
+    }
+
+    [Fact]
+    public void GeneratePinned_GivenOptions_WhenTooManyAttempts_ThenDisposesBuffer()
+    {
+        DefaultOptions.SetExactLength(16);
+        DefaultOptions.MaxAttempts = 10;
+
+        var buffer = new PinnedPasswordBuffer(16);
+        MockPasswordGenerator
+            .Setup(x => x.CreatePinnedBuffer(16))
+            .Returns(buffer)
+            .Verifiable();
+
+        bool? isValidResult = false;
+        MockPasswordGenerator
+            .Setup(x => x.SkipIsValid(out isValidResult))
+            .Returns(true)
+            .Verifiable();
+
+        var exception = Assert.Throws<InvalidOperationException>(() =>
+            PasswordGenerator.GeneratePinned(DefaultOptions));
+
+        Assert.Equal("Too many attempts.", exception.Message);
+        Assert.Throws<ObjectDisposedException>(() => buffer.Memory);
+    }
+
+    [Fact]
+    public void GeneratePinned_GivenImplementationWithoutOverride_ThenThrows()
+    {
+        IPasswordGenerator generator = new LegacyPasswordGenerator();
+
+        Assert.Throws<NotSupportedException>(() => generator.GeneratePinned());
+        Assert.Throws<NotSupportedException>(() => generator.GeneratePinned(_ => { }));
+        Assert.Throws<NotSupportedException>(() => generator.GeneratePinned(DefaultOptions));
+    }
+
+    #endregion
+
+    private sealed class LegacyPasswordGenerator : IPasswordGenerator
+    {
+        public string Generate() => throw new NotImplementedException();
+
+        public string Generate(Action<PasswordGeneratorOptions> optionsConfigurator) => throw new NotImplementedException();
+
+        public string Generate(PasswordGeneratorOptions options) => throw new NotImplementedException();
+
+        public void Generate(Span<char> password) => throw new NotImplementedException();
+
+        public void Generate(Action<PasswordGeneratorOptions> optionsConfigurator, Span<char> password) => throw new NotImplementedException();
+
+        public void Generate(PasswordGeneratorOptions options, Span<char> password) => throw new NotImplementedException();
+
+        public IEnumerator<string> GetEnumerator() => throw new NotImplementedException();
+
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 }

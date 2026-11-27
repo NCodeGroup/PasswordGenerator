@@ -23,7 +23,7 @@ flowchart LR
 
 | Component | Role |
 | --- | --- |
-| `IPasswordGenerator` | What applications call: `Generate` overloads that return a `string` or fill the caller's `Span<char>`, with the default options, options passed in, or a callback that adjusts a copy of the defaults. Enumerating it yields `MaxEnumerations` passwords. |
+| `IPasswordGenerator` | What applications call: `Generate` overloads that return a `string` or fill the caller's `Span<char>`, and `GeneratePinned` overloads that return a pinned buffer zeroed when disposed ([ADR-1001](decisions/1001-pinned-password-buffers-are-default-interface-members.md)), with the default options, options passed in, or a callback that adjusts a copy of the defaults. Enumerating it yields `MaxEnumerations` passwords. |
 | `PasswordGenerator` | The implementation, and `PasswordGenerator.Default`, a shared instance with the default options. It places each character class's minimum count, fills the rest from the allowed character set, shuffles the result, and repeats until `PasswordGeneratorOptions.IsValid` accepts it or `MaxAttempts` runs out. |
 | `PasswordGeneratorOptions` | The rules: the length range, the minimum count of lowercase, uppercase, numeric and special characters, the special characters, the longest run of identical characters, `MaxAttempts` and `MaxEnumerations`. `IsValid` checks a password against them. |
 | `ServiceCollectionExtensions` | `AddPasswordGenerator`, which registers `PasswordGenerator` as the singleton `IPasswordGenerator` and configures its options through `Microsoft.Extensions.Options`. |
@@ -33,8 +33,7 @@ flowchart LR
 
 - Decisions the design rests on are recorded in [decisions/](decisions/README.md).
 - Every random choice goes through `RandomNumberGenerator`, and a password is returned only after
-  `PasswordGeneratorOptions.IsValid` accepts it, except the empty string a length of 0 yields
-  ([assurance-case.md](assurance-case.md#security-requirements)).
+  `PasswordGeneratorOptions.IsValid` accepts it ([assurance-case.md](assurance-case.md#security-requirements)).
 - Warnings are errors ([ADR-0100](decisions/project-template/0100-warnings-are-errors-in-every-project.md)), and
   disallowed APIs are banned at build time
   ([ADR-0102](decisions/project-template/0102-disallowed-apis-are-banned-at-build-time.md)).
@@ -48,4 +47,7 @@ flowchart LR
 CI runs the project's commands on every pull request (`.github/workflows/ci.yml`). Releases are tagged when
 `AGENTS.md`'s Landing section sets `release: tag`, and published too with `tag+release`, as
 [ADR-0016](decisions/project-template/0016-releases-are-tagged-and-published-when-their-pull-request-merges.md) records.
-The project's own workflow, `.github/workflows/main.yml`, publishes the packages to nuget.org.
+`.github/workflows/publish.yml` tests and packs the tagged commit, pushes to nuget.org through trusted publishing once
+a maintainer approves the `nuget` environment, and calls `release-provenance.yml` and `raise-baseline.yml`
+([ADR-0137](decisions/project-template/0137-the-release-workflow-starts-package-publishing.md),
+[ADR-0151](decisions/project-template/0151-release-follow-ups-are-jobs-publish-calls.md)).

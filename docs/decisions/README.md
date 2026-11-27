@@ -63,3 +63,4 @@ override in `AGENTS.md`.
 | ADR | Decision | Status |
 | --- | --- | --- |
 | [1000](1000-the-library-targets-the-newest-dotnet-lts-release.md) | The library targets the newest .NET LTS release only; consumers on older runtimes stay on the previous major version | Accepted |
+| [1001](1001-pinned-password-buffers-are-default-interface-members.md) | IPasswordGenerator's GeneratePinned overloads are default interface members that throw NotSupportedException unless overridden; PasswordGenerator returns a pinned buffer it zeroes on dispose | Accepted |

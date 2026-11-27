@@ -99,6 +99,32 @@ public class PasswordGeneratorOptionsTests : BaseTests
     }
 
     [Fact]
+    public void IsValid_WhenPasswordContainsExcludedCharacter_ThenFalse()
+    {
+        const string password = "aB3!xY7#";
+
+        Assert.True(new PasswordGeneratorOptions().SetExactLength(8).IsValid(password));
+
+        var options = new PasswordGeneratorOptions().SetExactLength(8).SetExcludedCharacters("x");
+
+        var result = options.IsValid(password);
+
+        Assert.False(result);
+    }
+
+    [Fact]
+    public void IsValid_WhenNothingExcluded_ThenSamePasswordIsTrue()
+    {
+        const string password = "aB3!xY7#";
+
+        var options = new PasswordGeneratorOptions().SetExactLength(8);
+
+        var result = options.IsValid(password);
+
+        Assert.True(result);
+    }
+
+    [Fact]
     public void SetLengthRange_GivenInvalid_ThenThrows()
     {
         var options = new PasswordGeneratorOptions();

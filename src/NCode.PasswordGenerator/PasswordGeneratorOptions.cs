@@ -401,6 +401,7 @@ public class PasswordGeneratorOptions
     /// <summary>
     /// Returns <c>true</c> or <c>false</c> whether the specified <paramref name="password"/> is valid according to configured
     /// rules on the current <see cref="PasswordGeneratorOptions"/> instance.
+    /// A password that contains an excluded character (see <see cref="ExcludedCharacters"/>) is invalid.
     /// </summary>
     /// <param name="password">The password to check.</param>
     /// <returns><c>true</c> is the password is valid; otherwise, <c>false</c>.</returns>
@@ -408,6 +409,7 @@ public class PasswordGeneratorOptions
     {
         if (password.Length < MinLength) return false;
         if (password.Length > MaxLength) return false;
+        if (password.ContainsAny(ExcludedCharacters)) return false;
 
         var countSpecial = 0;
         var countNumeric = 0;

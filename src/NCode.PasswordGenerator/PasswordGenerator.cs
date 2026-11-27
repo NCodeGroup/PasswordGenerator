@@ -298,10 +298,10 @@ public class PasswordGenerator : IPasswordGenerator
         }
 
         var remaining = password;
-        remaining = FillRandom(options.SpecialCharacters, options.MinSpecialCharacters, remaining);
-        remaining = FillRandom(PasswordGeneratorOptions.NumericCharacters, options.MinNumericCharacters, remaining);
-        remaining = FillRandom(PasswordGeneratorOptions.LowercaseCharacters, options.MinLowercaseCharacters, remaining);
-        remaining = FillRandom(PasswordGeneratorOptions.UppercaseCharacters, options.MinUppercaseCharacters, remaining);
+        remaining = FillRandom(options.AllowedSpecialCharacters, options.MinSpecialCharacters, remaining);
+        remaining = FillRandom(options.AllowedNumericCharacters, options.MinNumericCharacters, remaining);
+        remaining = FillRandom(options.AllowedLowercaseCharacters, options.MinLowercaseCharacters, remaining);
+        remaining = FillRandom(options.AllowedUppercaseCharacters, options.MinUppercaseCharacters, remaining);
         FillRandom(characterSet, remaining.Length, remaining);
 
         RandomNumberGenerator.Shuffle(password);

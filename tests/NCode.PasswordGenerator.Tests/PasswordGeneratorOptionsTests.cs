@@ -214,6 +214,22 @@ public class PasswordGeneratorOptionsTests : BaseTests
         Assert.Empty(options.ExcludedCharacters);
     }
 
+    [Fact]
+    public void MinimumCharacterCount_GivenEachMinimum_ThenSumsThem()
+    {
+        var options = new PasswordGeneratorOptions
+        {
+            MinLowercaseCharacters = 1,
+            MinUppercaseCharacters = 2,
+            MinNumericCharacters = 3,
+            MinSpecialCharacters = 4,
+        };
+
+        var count = options.MinimumCharacterCount;
+
+        Assert.Equal(10, count);
+    }
+
     [Theory]
     [InlineData(2, "__", -1)]
     [InlineData(2, "___", 2)]
@@ -345,6 +361,7 @@ public class PasswordGeneratorOptionsTests : BaseTests
         var options = new PasswordGeneratorOptions();
 
         var bits = options.EstimateEntropyBits(16);
+        var expected = 16 * Math.Log2(91);
 
         Assert.Equal(expected, bits, 10);
     }
@@ -361,7 +378,6 @@ public class PasswordGeneratorOptionsTests : BaseTests
         };
         options.SetExcludedCharacters(PasswordGeneratorOptions.AmbiguousCharacters);
 
-        var expected = 16 * Math.Log2(91);
         var bits = options.EstimateEntropyBits(4);
 
         Assert.Equal(12.0, bits, 10);

@@ -263,6 +263,13 @@ public class PasswordGeneratorOptions
         return this;
     }
 
+    /// <summary>
+    /// Gets the sum of <see cref="MinLowercaseCharacters"/>, <see cref="MinUppercaseCharacters"/>,
+    /// <see cref="MinNumericCharacters"/> and <see cref="MinSpecialCharacters"/>.
+    /// </summary>
+    internal int MinimumCharacterCount =>
+        MinSpecialCharacters + MinNumericCharacters + MinLowercaseCharacters + MinUppercaseCharacters;
+
     private string? SpecialOrNull { get; set; }
 
     /// <summary>
@@ -478,7 +485,7 @@ public class PasswordGeneratorOptions
     internal IReadOnlyList<string> GetConfigurationErrors()
     {
         var errors = new List<string>();
-        var sum = MinSpecialCharacters + MinNumericCharacters + MinLowercaseCharacters + MinUppercaseCharacters;
+        var sum = MinimumCharacterCount;
 
         if (sum == 0)
             errors.Add("At least one character set must have a minimum greater than zero.");

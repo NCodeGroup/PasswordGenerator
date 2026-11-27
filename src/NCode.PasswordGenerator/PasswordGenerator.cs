@@ -207,10 +207,7 @@ public class PasswordGenerator : IPasswordGenerator
         if (password.Length > options.MaxLength)
             throw new InvalidOperationException("The requested password length is too large.");
 
-        var minCharacters = options.MinSpecialCharacters +
-                            options.MinNumericCharacters +
-                            options.MinLowercaseCharacters +
-                            options.MinUppercaseCharacters;
+        var minCharacters = options.MinimumCharacterCount;
 
         if (minCharacters == 0)
             throw new InvalidOperationException("At least one character set must have a minimum greater than zero.");

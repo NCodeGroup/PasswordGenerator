@@ -14,11 +14,10 @@ the maintainers say whether it fits.
 
 [//]: # "Maintainers: list what the project plans to do in the next twelve months, one bullet each."
 
-- **Publishing.** Do the one-time setup `.github/workflows/publish.yml` describes in its header, so releases publish to
-  nuget.org through trusted publishing from the protected `nuget` environment: the nuget.org trusted publishing policy
-  for this repository and `publish.yml`, the `nuget` environment with required reviewers, and the `NUGET_USER` variable.
-  Then publish a release through it and revoke any old nuget.org API key
-  ([#11](https://github.com/NCodeGroup/PasswordGenerator/issues/11)).
+- **Publishing.** Publish the first release through `.github/workflows/publish.yml`, which pushes to nuget.org through
+  trusted publishing from the protected `nuget` environment; its one-time setup is done
+  ([#40](https://github.com/NCodeGroup/PasswordGenerator/issues/40)). Then revoke any old nuget.org API key that is
+  still active.
 - **Supply chain.** Keep external inputs pinned and current
   ([ADR-0008](docs/decisions/project-template/0008-external-inputs-are-pinned-and-kept-current.md)), and raise the
   OpenSSF Scorecard score where the repository controls it

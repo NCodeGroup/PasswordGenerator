@@ -7,14 +7,12 @@ using System.Security.Cryptography;
 
 namespace NCode.PasswordGenerator;
 
-// Sealed, unlike other internal implementations: Moq proxies only virtual members and this type has none, tests
-// substitute it through PasswordGenerator.CreatePinnedBuffer, and no derived type can change how Dispose zeroes it.
 /// <summary>
 /// Owns a password buffer on the pinned object heap, so the garbage collector never copies it, and zeroes the buffer
 /// when disposed.
 /// </summary>
 /// <param name="length">The number of characters the buffer holds.</param>
-internal sealed class PinnedPasswordBuffer(int length) : IMemoryOwner<char>
+internal class PinnedPasswordBuffer(int length) : IMemoryOwner<char>
 {
     private char[]? _buffer = GC.AllocateUninitializedArray<char>(length, pinned: true);
 
